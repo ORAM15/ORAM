@@ -1,0 +1,144 @@
+[
+  {
+    "planId": "execution-plan:implementation-request-mission-improve-subsystem-documentation",
+    "status": "SUCCESS",
+    "startedAt": "<normalized>",
+    "finishedAt": "<normalized>",
+    "steps": [
+      {
+        "stepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-0",
+        "action": "CREATE_BRANCH",
+        "status": "SUCCESS",
+        "startedAt": "<normalized>",
+        "finishedAt": "<normalized>",
+        "message": "Simulated branch creation for step \"Create a working branch for this request.\" -- no git, filesystem, or shell command was actually run."
+      },
+      {
+        "stepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-1",
+        "action": "CREATE_FILE",
+        "status": "SUCCESS",
+        "startedAt": "<normalized>",
+        "finishedAt": "<normalized>",
+        "message": "Simulated file creation for step \"Create or update documentation describing subsystem responsibilities.\" -- no git, filesystem, or shell command was actually run."
+      },
+      {
+        "stepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-2",
+        "action": "RUN_TESTS",
+        "status": "SUCCESS",
+        "startedAt": "<normalized>",
+        "finishedAt": "<normalized>",
+        "message": "Simulated test run for step \"Run the full test suite to validate the changes.\" -- no git, filesystem, or shell command was actually run."
+      },
+      {
+        "stepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-3",
+        "action": "COMMIT",
+        "status": "SUCCESS",
+        "startedAt": "<normalized>",
+        "finishedAt": "<normalized>",
+        "message": "Simulated commit for step \"Commit the validated changes.\" -- no git, filesystem, or shell command was actually run."
+      }
+    ],
+    "logs": [
+      {
+        "id": "execution-log:execution-plan-implementation-request-mission-improve-subsystem-documentation-0",
+        "timestamp": "<normalized>",
+        "level": "INFO",
+        "message": "Simulated branch creation for step \"Create a working branch for this request.\" -- no git, filesystem, or shell command was actually run.",
+        "stepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-0"
+      },
+      {
+        "id": "execution-log:execution-plan-implementation-request-mission-improve-subsystem-documentation-1",
+        "timestamp": "<normalized>",
+        "level": "INFO",
+        "message": "Simulated file creation for step \"Create or update documentation describing subsystem responsibilities.\" -- no git, filesystem, or shell command was actually run.",
+        "stepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-1"
+      },
+      {
+        "id": "execution-log:execution-plan-implementation-request-mission-improve-subsystem-documentation-2",
+        "timestamp": "<normalized>",
+        "level": "INFO",
+        "message": "Simulated test run for step \"Run the full test suite to validate the changes.\" -- no git, filesystem, or shell command was actually run.",
+        "stepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-2"
+      },
+      {
+        "id": "execution-log:execution-plan-implementation-request-mission-improve-subsystem-documentation-3",
+        "timestamp": "<normalized>",
+        "level": "INFO",
+        "message": "Simulated commit for step \"Commit the validated changes.\" -- no git, filesystem, or shell command was actually run.",
+        "stepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-3"
+      }
+    ],
+    "failure": null
+  },
+  {
+    "planId": "execution-plan:implementation-request-mission-increase-test-coverage",
+    "status": "SUCCESS",
+    "startedAt": "<normalized>",
+    "finishedAt": "<normalized>",
+    "steps": [
+      {
+        "stepId": "execution-step:implementation-request-mission-increase-test-coverage-0",
+        "action": "CREATE_BRANCH",
+        "status": "SUCCESS",
+        "startedAt": "<normalized>",
+        "finishedAt": "<normalized>",
+        "message": "Simulated branch creation for step \"Create a working branch for this request.\" -- no git, filesystem, or shell command was actually run."
+      },
+      {
+        "stepId": "execution-step:implementation-request-mission-increase-test-coverage-1",
+        "action": "CREATE_FILE",
+        "status": "SUCCESS",
+        "startedAt": "<normalized>",
+        "finishedAt": "<normalized>",
+        "message": "Simulated file creation for step \"Create missing automated tests covering the identified gap.\" -- no git, filesystem, or shell command was actually run."
+      },
+      {
+        "stepId": "execution-step:implementation-request-mission-increase-test-coverage-2",
+        "action": "RUN_TESTS",
+        "status": "SUCCESS",
+        "startedAt": "<normalized>",
+        "finishedAt": "<normalized>",
+        "message": "Simulated test run for step \"Run the full test suite to validate the changes.\" -- no git, filesystem, or shell command was actually run."
+      },
+      {
+        "stepId": "execution-step:implementation-request-mission-increase-test-coverage-3",
+        "action": "COMMIT",
+        "status": "SUCCESS",
+        "startedAt": "<normalized>",
+        "finishedAt": "<normalized>",
+        "message": "Simulated commit for step \"Commit the validated changes.\" -- no git, filesystem, or shell command was actually run."
+      }
+    ],
+    "logs": [
+      {
+        "id": "execution-log:execution-plan-implementation-request-mission-increase-test-coverage-0",
+        "timestamp": "<normalized>",
+        "level": "INFO",
+        "message": "Simulated branch creation for step \"Create a working branch for this request.\" -- no git, filesystem, or shell command was actually run.",
+        "stepId": "execution-step:implementation-request-mission-increase-test-coverage-0"
+      },
+      {
+        "id": "execution-log:execution-plan-implementation-request-mission-increase-test-coverage-1",
+        "timestamp": "<normalized>",
+        "level": "INFO",
+        "message": "Simulated file creation for step \"Create missing automated tests covering the identified gap.\" -- no git, filesystem, or shell command was actually run.",
+        "stepId": "execution-step:implementation-request-mission-increase-test-coverage-1"
+      },
+      {
+        "id": "execution-log:execution-plan-implementation-request-mission-increase-test-coverage-2",
+        "timestamp": "<normalized>",
+        "level": "INFO",
+        "message": "Simulated test run for step \"Run the full test suite to validate the changes.\" -- no git, filesystem, or shell command was actually run.",
+        "stepId": "execution-step:implementation-request-mission-increase-test-coverage-2"
+      },
+      {
+        "id": "execution-log:execution-plan-implementation-request-mission-increase-test-coverage-3",
+        "timestamp": "<normalized>",
+        "level": "INFO",
+        "message": "Simulated commit for step \"Commit the validated changes.\" -- no git, filesystem, or shell command was actually run.",
+        "stepId": "execution-step:implementation-request-mission-increase-test-coverage-3"
+      }
+    ],
+    "failure": null
+  }
+]

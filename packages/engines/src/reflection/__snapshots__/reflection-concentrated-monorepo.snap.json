@@ -1,0 +1,22 @@
+{
+  "findings": [
+    {
+      "id": "reflection-finding:minor-quality-issues-remain",
+      "title": "Minor quality issues remain",
+      "description": "8 WARNING-severity issue(s) remain even though no ERROR-severity issue was found.",
+      "category": "QUALITY",
+      "severity": "WARNING"
+    },
+    {
+      "id": "reflection-finding:multiple-recommendations-exist",
+      "title": "Multiple recommendations exist",
+      "description": "8 recommendation(s) were generated from this validation batch.",
+      "category": "GENERAL",
+      "severity": "INFO"
+    }
+  ],
+  "summary": "2 reflection finding(s) raised from 8 warning-level issue(s), 8 recommendation(s) across 8 validated patch(es).",
+  "retryRecommended": false,
+  "overallScore": 88,
+  "confidence": 0.85
+}

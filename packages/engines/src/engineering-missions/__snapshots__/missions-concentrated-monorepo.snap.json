@@ -1,0 +1,66 @@
+{
+  "sourceProjectName": "concentrated-demo",
+  "sourceTimestamp": "<normalized>",
+  "missions": [
+    {
+      "id": "mission:improve-subsystem-documentation",
+      "kind": "improve-subsystem-documentation",
+      "title": "Improve Subsystem Documentation",
+      "description": "1 finding(s) from Engineering Reasoning map to this mission.",
+      "priority": "Low",
+      "rationale": "Undocumented subsystems slow onboarding and increase the risk of duplicated or conflicting work as the codebase grows. Derived from: opaque-subsystems:2-of-4-subsystems-have-no-technology-attributed-to-them-specifically-packages-shared-packages-utils-responsibilities-or-dependencies-may-be-undeclared-at-the-module-level.",
+      "estimatedEffort": "Small",
+      "expectedImpact": "Reduces onboarding friction and clarifies subsystem ownership and responsibilities.",
+      "tasks": [
+        {
+          "id": "improve-subsystem-documentation-task:opaque-subsystems-2-of-4-subsystems-have-no-technology-attributed-to-them-specifically-packages-shared-packages-utils-responsibilities-or-dependencies-may-be-undeclared-at-the-module-level",
+          "title": "Document subsystem responsibilities and dependencies",
+          "description": "2 of 4 subsystems have no technology attributed to them specifically (packages/shared, packages/utils) -- responsibilities or dependencies may be undeclared at the module level.",
+          "sourceFindingId": "opaque-subsystems:2-of-4-subsystems-have-no-technology-attributed-to-them-specifically-packages-shared-packages-utils-responsibilities-or-dependencies-may-be-undeclared-at-the-module-level"
+        }
+      ],
+      "sourceFindingIds": [
+        "opaque-subsystems:2-of-4-subsystems-have-no-technology-attributed-to-them-specifically-packages-shared-packages-utils-responsibilities-or-dependencies-may-be-undeclared-at-the-module-level"
+      ],
+      "dependencyIds": [],
+      "order": 0
+    },
+    {
+      "id": "mission:increase-test-coverage",
+      "kind": "increase-test-coverage",
+      "title": "Increase Test Coverage",
+      "description": "1 finding(s) from Engineering Reasoning map to this mission.",
+      "priority": "High",
+      "rationale": "Untested code -- especially an exposed API surface -- carries a materially higher risk of undetected regressions. Derived from: untested-api-surface:an-api-framework-express-is-in-use-with-no-automated-testing-framework-detected-untested-api-surface-is-a-higher-risk-gap-than-untested-code-in-general.",
+      "estimatedEffort": "Small",
+      "expectedImpact": "Reduces the risk of undetected regressions and makes future changes safer to make.",
+      "tasks": [
+        {
+          "id": "increase-test-coverage-task:untested-api-surface-an-api-framework-express-is-in-use-with-no-automated-testing-framework-detected-untested-api-surface-is-a-higher-risk-gap-than-untested-code-in-general",
+          "title": "Add automated test coverage",
+          "description": "An API framework (Express) is in use with no automated testing framework detected -- untested API surface is a higher-risk gap than untested code in general.",
+          "sourceFindingId": "untested-api-surface:an-api-framework-express-is-in-use-with-no-automated-testing-framework-detected-untested-api-surface-is-a-higher-risk-gap-than-untested-code-in-general"
+        }
+      ],
+      "sourceFindingIds": [
+        "untested-api-surface:an-api-framework-express-is-in-use-with-no-automated-testing-framework-detected-untested-api-surface-is-a-higher-risk-gap-than-untested-code-in-general"
+      ],
+      "dependencyIds": [
+        "mission:improve-subsystem-documentation"
+      ],
+      "order": 1
+    }
+  ],
+  "dependencies": [
+    {
+      "id": "mission-dependency:mission-improve-subsystem-documentation-mission-increase-test-coverage",
+      "missionId": "mission:increase-test-coverage",
+      "dependsOnMissionId": "mission:improve-subsystem-documentation"
+    }
+  ],
+  "executionOrder": [
+    "mission:improve-subsystem-documentation",
+    "mission:increase-test-coverage"
+  ],
+  "timestamp": "<normalized>"
+}

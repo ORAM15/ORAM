@@ -1,0 +1,76 @@
+{
+  "recommendations": [
+    {
+      "id": "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-0-placeholder-diff",
+      "validationIssueId": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-0-placeholder-diff",
+      "title": "Replace placeholder content",
+      "description": "Replace placeholder content with a complete implementation before execution.",
+      "priority": "WARNING",
+      "category": "CORRECTNESS",
+      "confidence": 0.9
+    },
+    {
+      "id": "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-1-placeholder-diff",
+      "validationIssueId": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-1-placeholder-diff",
+      "title": "Replace placeholder content",
+      "description": "Replace placeholder content with a complete implementation before execution.",
+      "priority": "WARNING",
+      "category": "CORRECTNESS",
+      "confidence": 0.9
+    },
+    {
+      "id": "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-2-placeholder-diff",
+      "validationIssueId": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-2-placeholder-diff",
+      "title": "Replace placeholder content",
+      "description": "Replace placeholder content with a complete implementation before execution.",
+      "priority": "WARNING",
+      "category": "CORRECTNESS",
+      "confidence": 0.9
+    },
+    {
+      "id": "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-3-placeholder-diff",
+      "validationIssueId": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-3-placeholder-diff",
+      "title": "Replace placeholder content",
+      "description": "Replace placeholder content with a complete implementation before execution.",
+      "priority": "WARNING",
+      "category": "CORRECTNESS",
+      "confidence": 0.9
+    },
+    {
+      "id": "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-0-placeholder-diff",
+      "validationIssueId": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-0-placeholder-diff",
+      "title": "Replace placeholder content",
+      "description": "Replace placeholder content with a complete implementation before execution.",
+      "priority": "WARNING",
+      "category": "CORRECTNESS",
+      "confidence": 0.9
+    },
+    {
+      "id": "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-1-placeholder-diff",
+      "validationIssueId": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-1-placeholder-diff",
+      "title": "Replace placeholder content",
+      "description": "Replace placeholder content with a complete implementation before execution.",
+      "priority": "WARNING",
+      "category": "CORRECTNESS",
+      "confidence": 0.9
+    },
+    {
+      "id": "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-2-placeholder-diff",
+      "validationIssueId": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-2-placeholder-diff",
+      "title": "Replace placeholder content",
+      "description": "Replace placeholder content with a complete implementation before execution.",
+      "priority": "WARNING",
+      "category": "CORRECTNESS",
+      "confidence": 0.9
+    },
+    {
+      "id": "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-3-placeholder-diff",
+      "validationIssueId": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-3-placeholder-diff",
+      "title": "Replace placeholder content",
+      "description": "Replace placeholder content with a complete implementation before execution.",
+      "priority": "WARNING",
+      "category": "CORRECTNESS",
+      "confidence": 0.9
+    }
+  ]
+}

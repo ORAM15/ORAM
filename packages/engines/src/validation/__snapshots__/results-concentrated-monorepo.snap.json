@@ -1,0 +1,124 @@
+{
+  "reports": [
+    {
+      "id": "validation-report:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-0",
+      "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-0",
+      "passed": true,
+      "score": 85,
+      "issues": [
+        {
+          "id": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-0-placeholder-diff",
+          "severity": "WARNING",
+          "title": "Placeholder diff detected",
+          "description": "This patch's diff contains the literal marker \"PLACEHOLDER\", indicating simulated or template content rather than a real change.",
+          "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-0"
+        }
+      ]
+    },
+    {
+      "id": "validation-report:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-1",
+      "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-1",
+      "passed": true,
+      "score": 85,
+      "issues": [
+        {
+          "id": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-1-placeholder-diff",
+          "severity": "WARNING",
+          "title": "Placeholder diff detected",
+          "description": "This patch's diff contains the literal marker \"PLACEHOLDER\", indicating simulated or template content rather than a real change.",
+          "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-1"
+        }
+      ]
+    },
+    {
+      "id": "validation-report:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-2",
+      "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-2",
+      "passed": true,
+      "score": 85,
+      "issues": [
+        {
+          "id": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-2-placeholder-diff",
+          "severity": "WARNING",
+          "title": "Placeholder diff detected",
+          "description": "This patch's diff contains the literal marker \"PLACEHOLDER\", indicating simulated or template content rather than a real change.",
+          "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-2"
+        }
+      ]
+    },
+    {
+      "id": "validation-report:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-3",
+      "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-3",
+      "passed": true,
+      "score": 85,
+      "issues": [
+        {
+          "id": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-3-placeholder-diff",
+          "severity": "WARNING",
+          "title": "Placeholder diff detected",
+          "description": "This patch's diff contains the literal marker \"PLACEHOLDER\", indicating simulated or template content rather than a real change.",
+          "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-3"
+        }
+      ]
+    },
+    {
+      "id": "validation-report:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-0",
+      "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-0",
+      "passed": true,
+      "score": 85,
+      "issues": [
+        {
+          "id": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-0-placeholder-diff",
+          "severity": "WARNING",
+          "title": "Placeholder diff detected",
+          "description": "This patch's diff contains the literal marker \"PLACEHOLDER\", indicating simulated or template content rather than a real change.",
+          "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-0"
+        }
+      ]
+    },
+    {
+      "id": "validation-report:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-1",
+      "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-1",
+      "passed": true,
+      "score": 85,
+      "issues": [
+        {
+          "id": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-1-placeholder-diff",
+          "severity": "WARNING",
+          "title": "Placeholder diff detected",
+          "description": "This patch's diff contains the literal marker \"PLACEHOLDER\", indicating simulated or template content rather than a real change.",
+          "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-1"
+        }
+      ]
+    },
+    {
+      "id": "validation-report:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-2",
+      "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-2",
+      "passed": true,
+      "score": 85,
+      "issues": [
+        {
+          "id": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-2-placeholder-diff",
+          "severity": "WARNING",
+          "title": "Placeholder diff detected",
+          "description": "This patch's diff contains the literal marker \"PLACEHOLDER\", indicating simulated or template content rather than a real change.",
+          "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-2"
+        }
+      ]
+    },
+    {
+      "id": "validation-report:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-3",
+      "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-3",
+      "passed": true,
+      "score": 85,
+      "issues": [
+        {
+          "id": "validation-issue:patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-3-placeholder-diff",
+          "severity": "WARNING",
+          "title": "Placeholder diff detected",
+          "description": "This patch's diff contains the literal marker \"PLACEHOLDER\", indicating simulated or template content rather than a real change.",
+          "patchId": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-3"
+        }
+      ]
+    }
+  ]
+}

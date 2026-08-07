@@ -1,0 +1,12 @@
+{
+  "name": "@oram/events",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Typed Event definitions for the ORAM Timeline (see docs/ORAM_SPECIFICATION_v1.md Section 7).",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

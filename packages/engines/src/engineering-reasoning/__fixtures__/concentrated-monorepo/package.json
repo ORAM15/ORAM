@@ -1,0 +1,5 @@
+{
+  "name": "concentrated-demo",
+  "private": true,
+  "workspaces": ["packages/*"]
+}

@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oram.dev/schema/oram.config.schema.json",
+  "title": "ORAM Configuration",
+  "description": "The complete configuration format for one repository's oram.config.json, as created by `oram init`. See docs/ORAM_SPECIFICATION_v1.md Section 9 (Configuration Model). Schema only -- loading/validation is not implemented yet (see ORAM_V3_MIGRATION_PLAN.md Milestone 1/2).",
+  "type": "object",
+  "required": ["version", "providers", "execution", "publishing"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1",
+      "description": "Config schema version. ORAM refuses to load a config whose version it does not recognize, rather than guessing at an upgrade."
+    },
+
+    "repository": {
+      "type": "object",
+      "description": "Repository-identifying metadata, recorded at `oram init` time so a Knowledge Store entry can be attributed even if the repository is later moved or renamed.",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "Human-readable project name. Generalizes detectProjectName() in scripts/repository-intelligence.js." },
+        "remoteUrl": { "type": ["string", "null"], "description": "The `git remote origin` URL at init time, if any." }
+      }
+    },
+
+    "providers": {
+      "type": "object",
+      "description": "Which Providers (docs/ORAM_SPECIFICATION_v1.md Section 6) are available to this repository, and which is used by default.",
+      "required": ["default", "configured"],
+      "additionalProperties": false,
+      "properties": {
+        "default": {
+          "type": "string",
+          "description": "The provider id used by `oram run`/`oram execute` when no --provider flag is given. Generalizes EXECUTION_PROVIDER (default: \"stub-deterministic-v1\" in scripts/implementation-executor.js)."
+        },
+        "configured": {
+          "type": "array",
+          "description": "Every provider this repository has enabled. At least one entry (typically \"stub\") is expected to always be present so `oram run` never has zero usable providers.",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "kind"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "A user-chosen identifier for this provider instance, unique within `configured` (a repository may configure the same `kind` twice with different settings)."
+              },
+              "kind": {
+                "type": "string",
+                "enum": ["stub", "claude-code", "gemini-cli", "openhands", "local-model"],
+                "description": "Which Provider implementation this entry configures. See docs/ORAM_SPECIFICATION_v1.md Section 6's reference provider table."
+              },
+              "settings": {
+                "type": "object",
+                "description": "Provider-specific, non-secret settings only (e.g. a model identifier, a CLI binary path/args, a timeout). Credentials are NEVER stored here -- they are always resolved from the environment or a secret manager by name, generalizing System B's existing discipline of referencing `secrets.GEMINI_API_KEY` by name only, never inlining a value.",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "execution": {
+      "type": "object",
+      "description": "Policy governing the Execute phase of the Engineering Lifecycle.",
+      "additionalProperties": false,
+      "properties": {
+        "requireApproval": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether a human must explicitly approve a Mission before its Work Order is handed to a Provider. Generalizes EXECUTION_POLICY_DEFAULTS.requireHumanApproval in scripts/implementation-request-engine.js (today: always true, hard-coded). ORAM's Core Philosophy (docs/ORAM_SPECIFICATION_v1.md Section 1.3) treats false as a valid but explicit opt-out, never a silent default."
+        },
+        "maxIterations": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Maximum number of Reflect-recommended retry attempts within one Engineering Cycle. Generalizes GVAMS_MAX_ITERATIONS in scripts/autonomous-orchestrator.js."
+        },
+        "allowBreakingChanges": { "type": "boolean", "default": false },
+        "allowDatabaseMigration": { "type": "boolean", "default": false },
+        "allowDependencyUpdates": { "type": "boolean", "default": false }
+      }
+    },
+
+    "gates": {
+      "type": "object",
+      "description": "Quality Gate thresholds (docs/ORAM_SPECIFICATION_v1.md's Quality Gate terminology). Unifies today's Validation Engine rule set with System B's diff-budget gate.",
+      "additionalProperties": false,
+      "properties": {
+        "diffBudget": {
+          "type": "object",
+          "description": "Generalizes .agent/runtime/config.json's diff_thresholds.",
+          "additionalProperties": false,
+          "properties": {
+            "maxChangedFiles": { "type": "integer", "minimum": 1, "default": 12 },
+            "maxLineChanges": { "type": "integer", "minimum": 1, "default": 500 }
+          }
+        },
+        "requireTests": {
+          "type": "boolean",
+          "default": true,
+          "description": "Generalizes EXECUTION_POLICY_DEFAULTS.requireTests in scripts/implementation-request-engine.js."
+        }
+      }
+    },
+
+    "publishing": {
+      "type": "object",
+      "description": "How ORAM opens a pull request once a Mission is validated and approved.",
+      "required": ["dryRun"],
+      "additionalProperties": false,
+      "properties": {
+        "dryRun": {
+          "type": "boolean",
+          "default": true,
+          "description": "When true, every publish stage is simulated -- no branch is created, no commit is made, no pull request is opened. Generalizes GITHUB_PUBLISH_DRY_RUN in scripts/github-publisher.js (default: true there as well). ORAM never changes this default silently."
+        },
+        "remote": {
+          "type": "string",
+          "default": "origin",
+          "description": "Generalizes GITHUB_PUBLISH_REMOTE."
+        },
+        "baseBranch": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Generalizes GITHUB_PUBLISH_BASE_BRANCH. null means \"branch from whatever is currently checked out\", matching today's documented behavior exactly."
+        },
+        "draft": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the opened pull request is created as a draft. Every existing publisher (publisher/github/client.js) always creates a draft PR today; this field exists so that default is explicit and overridable rather than implicit."
+        }
+      }
+    },
+
+    "artifacts": {
+      "type": "object",
+      "description": "Where the ArtifactStore (see packages/runtime/src/ArtifactStore.ts) persists this repository's run data.",
+      "additionalProperties": false,
+      "properties": {
+        "storage": {
+          "type": "string",
+          "enum": ["home", "repository-local"],
+          "default": "home",
+          "description": "\"home\" stores runs under a shared ~/.oram/ location (survives the repository being deleted/re-cloned elsewhere); \"repository-local\" stores them under a gitignored .oram/ directory inside the repository (travels with a clone). See ArtifactStore.ts's own open TODO on this exact decision."
+        },
+        "path": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Override for the storage location above. null means use the default for the selected `storage` mode."
+        }
+      }
+    },
+
+    "plugins": {
+      "type": "array",
+      "description": "Third-party Plugins enabled for this repository (docs/ORAM_SPECIFICATION_v1.md Section 10). Each entry is a resolvable package name.",
+      "items": { "type": "string" },
+      "default": []
+    },
+
+    "dashboard": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 4173,
+          "description": "Default port for `oram dashboard`."
+        }
+      }
+    }
+  }
+}

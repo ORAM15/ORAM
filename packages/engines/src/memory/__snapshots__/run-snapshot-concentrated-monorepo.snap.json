@@ -1,0 +1,17 @@
+{
+  "repositoryId": "repository:d-brdr-development-active-projects-oram-packages-engines-src-engineering-reasoning-fixtures-concentrated-monorepo",
+  "runId": "<normalized>",
+  "timestamp": "<normalized>",
+  "analysisSummary": "concentrated-demo -- 10 file(s) scanned.",
+  "knowledgeSummary": "4 subsystem(s), 6 relationship(s) identified.",
+  "reasoningSummary": "5 finding(s) identified.",
+  "planningSummary": "2 mission(s) planned.",
+  "missionCount": 2,
+  "requestCount": 2,
+  "executionPlanCount": 2,
+  "validationScore": 85,
+  "recommendationCount": 8,
+  "reflectionSummary": "2 reflection finding(s) raised from 8 warning-level issue(s), 8 recommendation(s) across 8 validated patch(es).",
+  "retryRecommended": false,
+  "overallConfidence": 0.85
+}

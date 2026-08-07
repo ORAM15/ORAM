@@ -1,0 +1,22 @@
+{
+  "id": "<normalized>",
+  "timestamp": "<normalized>",
+  "decisionType": "RETRY",
+  "reason": "Validation score 85/100 is below the 90 threshold expected before continuing.",
+  "confidence": 0.7,
+  "riskLevel": "MEDIUM",
+  "nextAction": "Retry execution, addressing the outstanding recommendations first.",
+  "evidenceIds": [
+    "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-0-placeholder-diff",
+    "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-1-placeholder-diff",
+    "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-2-placeholder-diff",
+    "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-3-placeholder-diff",
+    "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-0-placeholder-diff",
+    "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-1-placeholder-diff",
+    "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-2-placeholder-diff",
+    "recommendation:validation-issue-patch-artifact-llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-3-placeholder-diff"
+  ],
+  "policyIds": [
+    "policy:retry-low-validation-score"
+  ]
+}

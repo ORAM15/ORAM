@@ -1,0 +1,23 @@
+{
+  "name": "@oram/cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The `oram` command — supersedes scripts/gvams-cli.js (see docs/ORAM_SPECIFICATION_v1.md and ORAM_V3_MIGRATION_PLAN.md Section 6).",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "bin": {
+    "oram": "./dist/bin.js"
+  },
+  "dependencies": {
+    "@oram/runtime": "*",
+    "@oram/engines": "*"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  },
+  "scripts": {
+    "build": "esbuild src/bin.ts --bundle --platform=node --format=esm --outfile=dist/bin.js",
+    "typecheck": "tsc --noEmit"
+  }
+}

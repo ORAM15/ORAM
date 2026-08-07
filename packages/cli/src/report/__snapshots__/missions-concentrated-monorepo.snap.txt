@@ -1,0 +1,114 @@
+┌───────────────────────┐
+│      Repository       │
+└───────────────────────┘
+            │
+            ▼
+┌───────────────────────┐
+│  Repository Analysis  │
+└───────────────────────┘
+            │
+            ▼
+┌───────────────────────┐
+│ Engineering Knowledge │
+└───────────────────────┘
+            │
+            ▼
+┌───────────────────────┐
+│ Engineering Reasoning │
+└───────────────────────┘
+            │
+            ▼
+┌───────────────────────┐
+│ Engineering Planning  │
+└───────────────────────┘
+            │
+            ▼
+┌───────────────────────┐
+│ Engineering Missions  │
+└───────────────────────┘
+
+====================================================
+ORAM Mission Graph
+====================================================
+
+Repository
+✔ Name: concentrated-demo
+✔ Language: JavaScript
+✔ Package Manager: Unknown
+✔ Architecture: Monorepo (packages/* convention)
+
+----------------------------------------------------
+Engineering Knowledge
+----------------------------------------------------
+
+Subsystems
+  • packages/api
+  • packages/secure-api
+  • packages/shared
+  • packages/utils
+
+Relationships
+  • Api → Express
+  • Secure-api → Express
+  • Api → MongoDB (Mongoose)
+  • Secure-api → JSON Web Tokens (jsonwebtoken)
+  • Api → OpenAI SDK
+  • Api → TypeScript
+
+----------------------------------------------------
+Mission Graph
+----------------------------------------------------
+
+Mission 1: Improve Subsystem Documentation
+
+Priority: LOW
+Estimated Effort: Small
+Expected Impact: Reduces onboarding friction and clarifies subsystem ownership and responsibilities.
+Dependencies: None
+
+Tasks:
+  1. Document subsystem responsibilities and dependencies
+     2 of 4 subsystems have no technology attributed to them specifically (packages/shared, packages/utils) -- responsibilities or dependencies may be undeclared at the module level.
+
+--------------------------------------------
+
+Mission 2: Increase Test Coverage
+
+Priority: HIGH
+Estimated Effort: Small
+Expected Impact: Reduces the risk of undetected regressions and makes future changes safer to make.
+Dependencies: Mission 1
+
+Tasks:
+  1. Add automated test coverage
+     An API framework (Express) is in use with no automated testing framework detected -- untested API surface is a higher-risk gap than untested code in general.
+
+--------------------------------------------
+
+----------------------------------------------------
+Statistics
+----------------------------------------------------
+
+Files Scanned .......... 10
+Subsystems ............. 4
+Relationships .......... 6
+Findings ............... 5
+Missions ............... 2
+Tasks .................. 2
+Dependencies ........... 1
+Execution Time ......... 0 ms
+
+----------------------------------------------------
+Pipeline Status
+----------------------------------------------------
+
+✔ Repository Analysis Complete
+✔ Engineering Knowledge Complete
+✔ Engineering Reasoning Complete
+✔ Engineering Planning Complete
+✔ Engineering Missions Complete
+
+Overall Status
+SUCCESS
+
+====================================================

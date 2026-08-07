@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "//": "Shared compiler options for the new packages/ and apps/ workspace ONLY. Nothing under backend/ or frontend/ (the existing, working G-VAMS application) references or is affected by this file.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022"],
+    "declaration": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": false,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@oram/core": ["packages/core/src/index.ts"],
+      "@oram/runtime": ["packages/runtime/src/index.ts"],
+      "@oram/engines": ["packages/engines/src/index.ts"],
+      "@oram/providers": ["packages/providers/src/index.ts"],
+      "@oram/events": ["packages/events/src/index.ts"],
+      "@oram/artifacts": ["packages/artifacts/src/index.ts"],
+      "@oram/cli": ["packages/cli/src/index.ts"],
+      "@oram/sdk": ["packages/sdk/src/index.ts"],
+      "@oram/plugins": ["packages/plugins/src/index.ts"]
+    }
+  }
+}

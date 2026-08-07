@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <marker id="arrowhead" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb" />
+    </marker>
+    <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.14" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1920" height="1080" fill="#ffffff" />
+
+  <!-- Brand accent stripes -->
+  <rect x="0" y="0" width="1920" height="10" fill="#2563eb" />
+  <rect x="0" y="1070" width="1920" height="10" fill="#2563eb" />
+
+  <!-- Title -->
+  <text x="960" y="120" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="46" font-weight="700" fill="#0f172a">ORAM Engineering Pipeline</text>
+  <text x="960" y="160" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#64748b">From raw repository to deterministic engineering findings</text>
+
+  <!-- Box 1: Repository -->
+  <g filter="url(#cardShadow)">
+    <rect x="410" y="240" width="1100" height="140" rx="22" fill="#ffffff" stroke="#2563eb" stroke-width="3" />
+  </g>
+  <text x="460" y="280" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" letter-spacing="2" fill="#2563eb">STAGE 01</text>
+  <text x="460" y="318" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#0f172a">Repository</text>
+  <text x="460" y="345" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#475569">
+    <tspan x="460" dy="0">The raw, uninterpreted project on disk — source files,</tspan>
+    <tspan x="460" dy="25">manifests, and configuration.</tspan>
+  </text>
+  <circle cx="1412" cy="310" r="28" fill="#2563eb" />
+  <text x="1412" y="320" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#ffffff">1</text>
+
+  <!-- Arrow 1 -->
+  <line x1="960" y1="380" x2="960" y2="444" stroke="#2563eb" stroke-width="4" marker-end="url(#arrowhead)" />
+
+  <!-- Box 2: Repository Analysis -->
+  <g filter="url(#cardShadow)">
+    <rect x="410" y="450" width="1100" height="140" rx="22" fill="#ffffff" stroke="#2563eb" stroke-width="3" />
+  </g>
+  <text x="460" y="490" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" letter-spacing="2" fill="#2563eb">STAGE 02</text>
+  <text x="460" y="528" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#0f172a">Repository Analysis</text>
+  <text x="460" y="555" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#475569">
+    <tspan x="460" dy="0">Scans the repository once to produce evidence-backed facts</tspan>
+    <tspan x="460" dy="25">about languages, frameworks, and structure.</tspan>
+  </text>
+  <circle cx="1412" cy="520" r="28" fill="#2563eb" />
+  <text x="1412" y="530" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#ffffff">2</text>
+
+  <!-- Arrow 2 -->
+  <line x1="960" y1="590" x2="960" y2="654" stroke="#2563eb" stroke-width="4" marker-end="url(#arrowhead)" />
+
+  <!-- Box 3: Engineering Knowledge -->
+  <g filter="url(#cardShadow)">
+    <rect x="410" y="660" width="1100" height="140" rx="22" fill="#ffffff" stroke="#2563eb" stroke-width="3" />
+  </g>
+  <text x="460" y="700" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" letter-spacing="2" fill="#2563eb">STAGE 03</text>
+  <text x="460" y="738" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#0f172a">Engineering Knowledge</text>
+  <text x="460" y="765" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#475569">
+    <tspan x="460" dy="0">Organizes those facts into subsystems and the relationships</tspan>
+    <tspan x="460" dy="25">between them and their dependencies.</tspan>
+  </text>
+  <circle cx="1412" cy="730" r="28" fill="#2563eb" />
+  <text x="1412" y="740" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#ffffff">3</text>
+
+  <!-- Arrow 3 -->
+  <line x1="960" y1="800" x2="960" y2="864" stroke="#2563eb" stroke-width="4" marker-end="url(#arrowhead)" />
+
+  <!-- Box 4: Engineering Reasoning -->
+  <g filter="url(#cardShadow)">
+    <rect x="410" y="870" width="1100" height="140" rx="22" fill="#ffffff" stroke="#2563eb" stroke-width="3" />
+  </g>
+  <text x="460" y="910" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" letter-spacing="2" fill="#2563eb">STAGE 04</text>
+  <text x="460" y="948" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#0f172a">Engineering Reasoning</text>
+  <text x="460" y="975" font-family="Arial, Helvetica, sans-serif" font-size="19" fill="#475569">
+    <tspan x="460" dy="0">Applies deterministic rules across those facts to surface</tspan>
+    <tspan x="460" dy="25">findings, risks, and architectural patterns.</tspan>
+  </text>
+  <circle cx="1412" cy="940" r="28" fill="#2563eb" />
+  <text x="1412" y="950" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#ffffff">4</text>
+</svg>

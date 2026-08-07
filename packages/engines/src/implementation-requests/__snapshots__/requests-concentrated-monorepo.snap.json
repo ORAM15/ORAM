@@ -1,0 +1,74 @@
+{
+  "sourceProjectName": "concentrated-demo",
+  "sourceTimestamp": "<normalized>",
+  "requests": [
+    {
+      "id": "implementation-request:mission-improve-subsystem-documentation",
+      "missionId": "mission:improve-subsystem-documentation",
+      "title": "Improve Subsystem Documentation",
+      "priority": "Low",
+      "rationale": "Undocumented subsystems slow onboarding and increase the risk of duplicated or conflicting work as the codebase grows. Derived from: opaque-subsystems:2-of-4-subsystems-have-no-technology-attributed-to-them-specifically-packages-shared-packages-utils-responsibilities-or-dependencies-may-be-undeclared-at-the-module-level.",
+      "goal": "Improve Subsystem Documentation -- Reduces onboarding friction and clarifies subsystem ownership and responsibilities.",
+      "expectedImpact": "Reduces onboarding friction and clarifies subsystem ownership and responsibilities.",
+      "estimatedEffort": "Small",
+      "implementationTargets": [
+        {
+          "id": "implementation-target:mission-improve-subsystem-documentation-packages-shared",
+          "subsystem": "packages/shared",
+          "files": []
+        },
+        {
+          "id": "implementation-target:mission-improve-subsystem-documentation-packages-utils",
+          "subsystem": "packages/utils",
+          "files": []
+        }
+      ],
+      "acceptanceCriteria": [
+        {
+          "id": "acceptance-criterion:improve-subsystem-documentation-task-opaque-subsystems-2-of-4-subsystems-have-no-technology-attributed-to-them-specifically-packages-shared-packages-utils-responsibilities-or-dependencies-may-be-undeclared-at-the-module-level",
+          "description": "Resolved: 2 of 4 subsystems have no technology attributed to them specifically (packages/shared, packages/utils) -- responsibilities or dependencies may be undeclared at the module level.",
+          "sourceTaskId": "improve-subsystem-documentation-task:opaque-subsystems-2-of-4-subsystems-have-no-technology-attributed-to-them-specifically-packages-shared-packages-utils-responsibilities-or-dependencies-may-be-undeclared-at-the-module-level"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraint:universal-improve-subsystem-documentation",
+          "description": "No AI/LLM-generated code -- implementation must be deterministic and human-reviewable."
+        },
+        {
+          "id": "constraint:kind-improve-subsystem-documentation",
+          "description": "Documentation only -- must not change any code behavior."
+        }
+      ]
+    },
+    {
+      "id": "implementation-request:mission-increase-test-coverage",
+      "missionId": "mission:increase-test-coverage",
+      "title": "Increase Test Coverage",
+      "priority": "High",
+      "rationale": "Untested code -- especially an exposed API surface -- carries a materially higher risk of undetected regressions. Derived from: untested-api-surface:an-api-framework-express-is-in-use-with-no-automated-testing-framework-detected-untested-api-surface-is-a-higher-risk-gap-than-untested-code-in-general.",
+      "goal": "Increase Test Coverage -- Reduces the risk of undetected regressions and makes future changes safer to make.",
+      "expectedImpact": "Reduces the risk of undetected regressions and makes future changes safer to make.",
+      "estimatedEffort": "Small",
+      "implementationTargets": [],
+      "acceptanceCriteria": [
+        {
+          "id": "acceptance-criterion:increase-test-coverage-task-untested-api-surface-an-api-framework-express-is-in-use-with-no-automated-testing-framework-detected-untested-api-surface-is-a-higher-risk-gap-than-untested-code-in-general",
+          "description": "Resolved: An API framework (Express) is in use with no automated testing framework detected -- untested API surface is a higher-risk gap than untested code in general.",
+          "sourceTaskId": "increase-test-coverage-task:untested-api-surface-an-api-framework-express-is-in-use-with-no-automated-testing-framework-detected-untested-api-surface-is-a-higher-risk-gap-than-untested-code-in-general"
+        }
+      ],
+      "constraints": [
+        {
+          "id": "constraint:universal-increase-test-coverage",
+          "description": "No AI/LLM-generated code -- implementation must be deterministic and human-reviewable."
+        },
+        {
+          "id": "constraint:kind-increase-test-coverage",
+          "description": "Tests only -- must not change existing production code behavior."
+        }
+      ]
+    }
+  ],
+  "timestamp": "<normalized>"
+}

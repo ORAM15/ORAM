@@ -1,0 +1,52 @@
+# dependencies
+node_modules/
+
+# packages/*/ build output (e.g. packages/cli/dist/bin.js -- see packages/cli/README.md's Installation section)
+packages/*/dist/
+
+# environment variables
+.env
+
+# misc
+.DS_Store
+npm-debug.log
+
+# Repository Intelligence v1 generated output (timestamped on every run; regenerate with
+# `node scripts/repository-intelligence.js`)
+/repository-intelligence/
+
+# Engineering Knowledge Engine v1 generated output (timestamped on every run; regenerate with
+# `node scripts/engineering-knowledge.js`)
+/engineering-knowledge/
+
+# Recommendation Engine v1 generated output (timestamped on every run; regenerate with
+# `node scripts/recommendation-engine.js`)
+/recommendations/
+
+# Decision Engine v1 generated output (timestamped on every run; regenerate with
+# `node scripts/decision-engine.js`)
+/decision/
+
+# Implementation Request Engine v1 generated output (timestamped on every run; regenerate with
+# `node scripts/implementation-request-engine.js`)
+/implementation-request/
+
+# Implementation Executor v1 generated output (timestamped on every run; regenerate with
+# `node scripts/implementation-executor.js`)
+/execution/
+
+# Validation Engine v1 generated output (timestamped on every run; regenerate with
+# `node scripts/validation-engine.js`)
+/validation/
+
+# Pull Request Generator v1 generated output (timestamped on every run; regenerate with
+# `node scripts/pull-request-generator.js`)
+/pull-request/
+
+# GitHub Publisher Adapter v1 generated output (timestamped on every run; regenerate with
+# `node scripts/github-publisher.js`)
+/publish/
+
+# Autonomous Engineering Orchestrator v1 generated output (timestamped on every run; regenerate with
+# `node scripts/autonomous-orchestrator.js`)
+/run/

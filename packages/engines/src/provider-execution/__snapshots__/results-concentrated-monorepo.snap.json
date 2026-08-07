@@ -1,0 +1,264 @@
+[
+  {
+    "planId": "execution-plan:implementation-request-mission-improve-subsystem-documentation",
+    "steps": [
+      {
+        "executionStepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-0",
+        "prompt": {
+          "id": "prompt-artifact:execution-step-implementation-request-mission-improve-subsystem-documentation-0",
+          "executionStepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-0",
+          "provider": "memory",
+          "model": "memory-v1",
+          "systemPrompt": "You are an automated software engineering assistant executing one predefined step. Respond with a short summary of the change followed by a unified diff. Do not ask questions; do not perform actions outside this step.",
+          "userPrompt": "Action: CREATE_BRANCH\nDescription: Create a working branch for this request.\n\nProduce the minimal change needed to complete this step."
+        },
+        "response": {
+          "id": "llm-response:prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-0",
+          "promptId": "prompt-artifact:execution-step-implementation-request-mission-improve-subsystem-documentation-0",
+          "provider": "memory",
+          "model": "memory-v1",
+          "rawText": "Created working branch.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Created working branch (simulated -- MemoryProvider makes no real AI call).\n```",
+          "usage": {
+            "promptTokens": 351,
+            "completionTokens": 168,
+            "totalTokens": 519
+          },
+          "finishReason": "stop"
+        },
+        "patch": {
+          "id": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-0",
+          "responseId": "llm-response:prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-0",
+          "language": "unknown",
+          "unifiedDiff": "Created working branch.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Created working branch (simulated -- MemoryProvider makes no real AI call).\n```",
+          "summary": "Unvalidated patch captured from memory/memory-v1 response llm-response:prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-0."
+        }
+      },
+      {
+        "executionStepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-1",
+        "prompt": {
+          "id": "prompt-artifact:execution-step-implementation-request-mission-improve-subsystem-documentation-1",
+          "executionStepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-1",
+          "provider": "memory",
+          "model": "memory-v1",
+          "systemPrompt": "You are an automated software engineering assistant executing one predefined step. Respond with a short summary of the change followed by a unified diff. Do not ask questions; do not perform actions outside this step.",
+          "userPrompt": "Action: CREATE_FILE\nDescription: Create or update documentation describing subsystem responsibilities.\n\nProduce the minimal change needed to complete this step."
+        },
+        "response": {
+          "id": "llm-response:prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-1",
+          "promptId": "prompt-artifact:execution-step-implementation-request-mission-improve-subsystem-documentation-1",
+          "provider": "memory",
+          "model": "memory-v1",
+          "rawText": "Created file.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Created file (simulated -- MemoryProvider makes no real AI call).\n```",
+          "usage": {
+            "promptTokens": 377,
+            "completionTokens": 148,
+            "totalTokens": 525
+          },
+          "finishReason": "stop"
+        },
+        "patch": {
+          "id": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-1",
+          "responseId": "llm-response:prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-1",
+          "language": "unknown",
+          "unifiedDiff": "Created file.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Created file (simulated -- MemoryProvider makes no real AI call).\n```",
+          "summary": "Unvalidated patch captured from memory/memory-v1 response llm-response:prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-1."
+        }
+      },
+      {
+        "executionStepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-2",
+        "prompt": {
+          "id": "prompt-artifact:execution-step-implementation-request-mission-improve-subsystem-documentation-2",
+          "executionStepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-2",
+          "provider": "memory",
+          "model": "memory-v1",
+          "systemPrompt": "You are an automated software engineering assistant executing one predefined step. Respond with a short summary of the change followed by a unified diff. Do not ask questions; do not perform actions outside this step.",
+          "userPrompt": "Action: RUN_TESTS\nDescription: Run the full test suite to validate the changes.\n\nProduce the minimal change needed to complete this step."
+        },
+        "response": {
+          "id": "llm-response:prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-2",
+          "promptId": "prompt-artifact:execution-step-implementation-request-mission-improve-subsystem-documentation-2",
+          "provider": "memory",
+          "model": "memory-v1",
+          "rawText": "Added tests.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Added tests (simulated -- MemoryProvider makes no real AI call).\n```",
+          "usage": {
+            "promptTokens": 354,
+            "completionTokens": 146,
+            "totalTokens": 500
+          },
+          "finishReason": "stop"
+        },
+        "patch": {
+          "id": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-2",
+          "responseId": "llm-response:prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-2",
+          "language": "unknown",
+          "unifiedDiff": "Added tests.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Added tests (simulated -- MemoryProvider makes no real AI call).\n```",
+          "summary": "Unvalidated patch captured from memory/memory-v1 response llm-response:prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-2."
+        }
+      },
+      {
+        "executionStepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-3",
+        "prompt": {
+          "id": "prompt-artifact:execution-step-implementation-request-mission-improve-subsystem-documentation-3",
+          "executionStepId": "execution-step:implementation-request-mission-improve-subsystem-documentation-3",
+          "provider": "memory",
+          "model": "memory-v1",
+          "systemPrompt": "You are an automated software engineering assistant executing one predefined step. Respond with a short summary of the change followed by a unified diff. Do not ask questions; do not perform actions outside this step.",
+          "userPrompt": "Action: COMMIT\nDescription: Commit the validated changes.\n\nProduce the minimal change needed to complete this step."
+        },
+        "response": {
+          "id": "llm-response:prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-3",
+          "promptId": "prompt-artifact:execution-step-implementation-request-mission-improve-subsystem-documentation-3",
+          "provider": "memory",
+          "model": "memory-v1",
+          "rawText": "Committed changes.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Committed changes (simulated -- MemoryProvider makes no real AI call).\n```",
+          "usage": {
+            "promptTokens": 332,
+            "completionTokens": 158,
+            "totalTokens": 490
+          },
+          "finishReason": "stop"
+        },
+        "patch": {
+          "id": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-3",
+          "responseId": "llm-response:prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-3",
+          "language": "unknown",
+          "unifiedDiff": "Committed changes.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Committed changes (simulated -- MemoryProvider makes no real AI call).\n```",
+          "summary": "Unvalidated patch captured from memory/memory-v1 response llm-response:prompt-artifact-execution-step-implementation-request-mission-improve-subsystem-documentation-3."
+        }
+      }
+    ],
+    "startedAt": "<normalized>",
+    "finishedAt": "<normalized>"
+  },
+  {
+    "planId": "execution-plan:implementation-request-mission-increase-test-coverage",
+    "steps": [
+      {
+        "executionStepId": "execution-step:implementation-request-mission-increase-test-coverage-0",
+        "prompt": {
+          "id": "prompt-artifact:execution-step-implementation-request-mission-increase-test-coverage-0",
+          "executionStepId": "execution-step:implementation-request-mission-increase-test-coverage-0",
+          "provider": "memory",
+          "model": "memory-v1",
+          "systemPrompt": "You are an automated software engineering assistant executing one predefined step. Respond with a short summary of the change followed by a unified diff. Do not ask questions; do not perform actions outside this step.",
+          "userPrompt": "Action: CREATE_BRANCH\nDescription: Create a working branch for this request.\n\nProduce the minimal change needed to complete this step."
+        },
+        "response": {
+          "id": "llm-response:prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-0",
+          "promptId": "prompt-artifact:execution-step-implementation-request-mission-increase-test-coverage-0",
+          "provider": "memory",
+          "model": "memory-v1",
+          "rawText": "Created working branch.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Created working branch (simulated -- MemoryProvider makes no real AI call).\n```",
+          "usage": {
+            "promptTokens": 351,
+            "completionTokens": 168,
+            "totalTokens": 519
+          },
+          "finishReason": "stop"
+        },
+        "patch": {
+          "id": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-0",
+          "responseId": "llm-response:prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-0",
+          "language": "unknown",
+          "unifiedDiff": "Created working branch.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Created working branch (simulated -- MemoryProvider makes no real AI call).\n```",
+          "summary": "Unvalidated patch captured from memory/memory-v1 response llm-response:prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-0."
+        }
+      },
+      {
+        "executionStepId": "execution-step:implementation-request-mission-increase-test-coverage-1",
+        "prompt": {
+          "id": "prompt-artifact:execution-step-implementation-request-mission-increase-test-coverage-1",
+          "executionStepId": "execution-step:implementation-request-mission-increase-test-coverage-1",
+          "provider": "memory",
+          "model": "memory-v1",
+          "systemPrompt": "You are an automated software engineering assistant executing one predefined step. Respond with a short summary of the change followed by a unified diff. Do not ask questions; do not perform actions outside this step.",
+          "userPrompt": "Action: CREATE_FILE\nDescription: Create missing automated tests covering the identified gap.\n\nProduce the minimal change needed to complete this step."
+        },
+        "response": {
+          "id": "llm-response:prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-1",
+          "promptId": "prompt-artifact:execution-step-implementation-request-mission-increase-test-coverage-1",
+          "provider": "memory",
+          "model": "memory-v1",
+          "rawText": "Created file.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Created file (simulated -- MemoryProvider makes no real AI call).\n```",
+          "usage": {
+            "promptTokens": 367,
+            "completionTokens": 148,
+            "totalTokens": 515
+          },
+          "finishReason": "stop"
+        },
+        "patch": {
+          "id": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-1",
+          "responseId": "llm-response:prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-1",
+          "language": "unknown",
+          "unifiedDiff": "Created file.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Created file (simulated -- MemoryProvider makes no real AI call).\n```",
+          "summary": "Unvalidated patch captured from memory/memory-v1 response llm-response:prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-1."
+        }
+      },
+      {
+        "executionStepId": "execution-step:implementation-request-mission-increase-test-coverage-2",
+        "prompt": {
+          "id": "prompt-artifact:execution-step-implementation-request-mission-increase-test-coverage-2",
+          "executionStepId": "execution-step:implementation-request-mission-increase-test-coverage-2",
+          "provider": "memory",
+          "model": "memory-v1",
+          "systemPrompt": "You are an automated software engineering assistant executing one predefined step. Respond with a short summary of the change followed by a unified diff. Do not ask questions; do not perform actions outside this step.",
+          "userPrompt": "Action: RUN_TESTS\nDescription: Run the full test suite to validate the changes.\n\nProduce the minimal change needed to complete this step."
+        },
+        "response": {
+          "id": "llm-response:prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-2",
+          "promptId": "prompt-artifact:execution-step-implementation-request-mission-increase-test-coverage-2",
+          "provider": "memory",
+          "model": "memory-v1",
+          "rawText": "Added tests.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Added tests (simulated -- MemoryProvider makes no real AI call).\n```",
+          "usage": {
+            "promptTokens": 354,
+            "completionTokens": 146,
+            "totalTokens": 500
+          },
+          "finishReason": "stop"
+        },
+        "patch": {
+          "id": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-2",
+          "responseId": "llm-response:prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-2",
+          "language": "unknown",
+          "unifiedDiff": "Added tests.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Added tests (simulated -- MemoryProvider makes no real AI call).\n```",
+          "summary": "Unvalidated patch captured from memory/memory-v1 response llm-response:prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-2."
+        }
+      },
+      {
+        "executionStepId": "execution-step:implementation-request-mission-increase-test-coverage-3",
+        "prompt": {
+          "id": "prompt-artifact:execution-step-implementation-request-mission-increase-test-coverage-3",
+          "executionStepId": "execution-step:implementation-request-mission-increase-test-coverage-3",
+          "provider": "memory",
+          "model": "memory-v1",
+          "systemPrompt": "You are an automated software engineering assistant executing one predefined step. Respond with a short summary of the change followed by a unified diff. Do not ask questions; do not perform actions outside this step.",
+          "userPrompt": "Action: COMMIT\nDescription: Commit the validated changes.\n\nProduce the minimal change needed to complete this step."
+        },
+        "response": {
+          "id": "llm-response:prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-3",
+          "promptId": "prompt-artifact:execution-step-implementation-request-mission-increase-test-coverage-3",
+          "provider": "memory",
+          "model": "memory-v1",
+          "rawText": "Committed changes.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Committed changes (simulated -- MemoryProvider makes no real AI call).\n```",
+          "usage": {
+            "promptTokens": 332,
+            "completionTokens": 158,
+            "totalTokens": 490
+          },
+          "finishReason": "stop"
+        },
+        "patch": {
+          "id": "patch-artifact:llm-response-prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-3",
+          "responseId": "llm-response:prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-3",
+          "language": "unknown",
+          "unifiedDiff": "Committed changes.\n\n```diff\n--- a/PLACEHOLDER\n+++ b/PLACEHOLDER\n@@ -0,0 +1,1 @@\n+// Committed changes (simulated -- MemoryProvider makes no real AI call).\n```",
+          "summary": "Unvalidated patch captured from memory/memory-v1 response llm-response:prompt-artifact-execution-step-implementation-request-mission-increase-test-coverage-3."
+        }
+      }
+    ],
+    "startedAt": "<normalized>",
+    "finishedAt": "<normalized>"
+  }
+]

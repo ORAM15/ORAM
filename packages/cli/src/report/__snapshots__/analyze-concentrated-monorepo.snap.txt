@@ -1,0 +1,113 @@
+┌───────────────────────┐
+│      Repository       │
+└───────────────────────┘
+            │
+            ▼
+┌───────────────────────┐
+│  Repository Analysis  │
+└───────────────────────┘
+            │
+            ▼
+┌───────────────────────┐
+│ Engineering Knowledge │
+└───────────────────────┘
+            │
+            ▼
+┌───────────────────────┐
+│ Engineering Reasoning │
+└───────────────────────┘
+
+====================================================
+ORAM Engineering Analysis
+====================================================
+
+Repository
+✔ Name: concentrated-demo
+✔ Language: JavaScript
+✔ Package Manager: Unknown
+✔ Architecture: Monorepo (packages/* convention)
+
+----------------------------------------------------
+Engineering Knowledge
+----------------------------------------------------
+
+Subsystems
+  • packages/api
+  • packages/secure-api
+  • packages/shared
+  • packages/utils
+
+Relationships
+  • Api → Express
+  • Secure-api → Express
+  • Api → MongoDB (Mongoose)
+  • Secure-api → JSON Web Tokens (jsonwebtoken)
+  • Api → OpenAI SDK
+  • Api → TypeScript
+
+----------------------------------------------------
+Engineering Findings
+----------------------------------------------------
+
+⚠ MEDIUM
+Concentrated Subsystem
+
+Reason:
+Subsystem `packages/api` concentrates 4 of 6 detected technology relationships (67%) -- consider whether responsibilities should be split.
+
+--------------------------------------------
+
+⚠ HIGH
+Untested API Surface
+
+Reason:
+An API framework (Express) is in use with no automated testing framework detected -- untested API surface is a higher-risk gap than untested code in general.
+
+--------------------------------------------
+
+⚠ HIGH
+No CI/CD in Monorepo
+
+Reason:
+No CI/CD configuration was detected across a 4-subsystem repository -- more surface area is left unverified than in a single-package repository.
+
+--------------------------------------------
+
+⚠ MEDIUM
+API Without Authentication
+
+Reason:
+Subsystem `packages/api` exposes an API framework (Express) with no authentication library attributed specifically to this subsystem.
+
+--------------------------------------------
+
+ℹ LOW
+Opaque Subsystems
+
+Reason:
+2 of 4 subsystems have no technology attributed to them specifically (packages/shared, packages/utils) -- responsibilities or dependencies may be undeclared at the module level.
+
+--------------------------------------------
+
+----------------------------------------------------
+Statistics
+----------------------------------------------------
+
+Files Scanned .......... 10
+Subsystems ............. 4
+Relationships .......... 6
+Findings ............... 5
+Execution Time ......... 0 ms
+
+----------------------------------------------------
+Pipeline Status
+----------------------------------------------------
+
+✔ Repository Analysis Complete
+✔ Engineering Knowledge Complete
+✔ Engineering Reasoning Complete
+
+Overall Status
+SUCCESS
+
+====================================================

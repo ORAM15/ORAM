@@ -1,0 +1,149 @@
+┌─────────────────────────┐
+│       Repository        │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│   Repository Analysis   │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Knowledge  │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Reasoning  │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Planning   │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Missions   │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ Implementation Requests │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│   Execution Planning    │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ Implementation Executor │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│   Provider Execution    │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│       Validation        │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│     Recommendation      │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│       Reflection        │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│   Engineering Memory    │
+└─────────────────────────┘
+
+====================================================
+ORAM Run History
+====================================================
+
+Repository
+✔ Name: concentrated-demo
+✔ Language: JavaScript
+✔ Package Manager: Unknown
+✔ Architecture: Monorepo (packages/* convention)
+
+----------------------------------------------------
+Engineering Knowledge
+----------------------------------------------------
+
+Subsystems
+  • packages/api
+  • packages/secure-api
+  • packages/shared
+  • packages/utils
+
+Relationships
+  • Api → Express
+  • Secure-api → Express
+  • Api → MongoDB (Mongoose)
+  • Secure-api → JSON Web Tokens (jsonwebtoken)
+  • Api → OpenAI SDK
+  • Api → TypeScript
+
+----------------------------------------------------
+Run History
+----------------------------------------------------
+
+Repository: repository:d-brdr-development-active-projects-oram-packages-engines-src-engineering-reasoning-fixtures-concentrated-monorepo
+Total Runs: 1
+Latest Run: RUN-<normalized>
+Average Score: 85/100
+Best Score: 85
+Worst Score: 85
+Retry %: 0%
+Trend: N/A
+Last Reflection: 2 reflection finding(s) raised from 8 warning-level issue(s), 8 recommendation(s) across 8 validated patch(es).
+
+----------------------------------------------------
+Statistics
+----------------------------------------------------
+
+Files Scanned .......... 10
+Subsystems ............. 4
+Relationships .......... 6
+Findings ............... 5
+Missions ............... 2
+Avg Validation Score ... 85
+Avg Recommendations .... 8.0
+Avg Missions ........... 2.0
+Avg Execution Plans .... 2.0
+Avg Retries ............ 0%
+Execution Time ......... 0 ms
+
+----------------------------------------------------
+Pipeline Status
+----------------------------------------------------
+
+✔ Repository Analysis Complete
+✔ Engineering Knowledge Complete
+✔ Engineering Reasoning Complete
+✔ Engineering Planning Complete
+✔ Engineering Missions Complete
+✔ Implementation Requests Complete
+✔ Execution Planning Complete
+✔ Implementation Executor Complete
+✔ Provider Execution Complete
+✔ Validation Complete
+✔ Recommendation Complete
+✔ Reflection Complete
+✔ Engineering Memory Complete
+
+Overall Status
+SUCCESS
+
+====================================================

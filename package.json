@@ -1,0 +1,20 @@
+{
+  "name": "oram",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ORAM -- Orchestrated Repository Autonomous Manager. A deterministic Engineering Intelligence Framework: a pipeline of engines (Repository Analysis through Adaptive Decision) that observe, reason about, and recommend changes to a codebase, plus the oram CLI. See README.md and docs/ORAM_SPECIFICATION_v1.md.",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "bin": {
+    "oram": "./packages/cli/dist/bin.js"
+  },
+  "scripts": {
+    "build": "npm run build --workspace packages/cli",
+    "test": "npx tsx --test packages/*/src/**/*.test.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  }
+}

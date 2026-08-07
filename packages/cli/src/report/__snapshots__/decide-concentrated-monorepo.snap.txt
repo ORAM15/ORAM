@@ -1,0 +1,149 @@
+┌─────────────────────────┐
+│       Repository        │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│   Repository Analysis   │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Knowledge  │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Reasoning  │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Planning   │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Missions   │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ Implementation Requests │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│   Execution Planning    │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ Implementation Executor │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│   Provider Execution    │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│       Validation        │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│     Recommendation      │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│       Reflection        │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│    Adaptive Decision    │
+└─────────────────────────┘
+
+====================================================
+ORAM Engineering Decision
+====================================================
+
+Repository
+✔ Name: concentrated-demo
+✔ Language: JavaScript
+✔ Package Manager: Unknown
+✔ Architecture: Monorepo (packages/* convention)
+
+----------------------------------------------------
+Engineering Knowledge
+----------------------------------------------------
+
+Subsystems
+  • packages/api
+  • packages/secure-api
+  • packages/shared
+  • packages/utils
+
+Relationships
+  • Api → Express
+  • Secure-api → Express
+  • Api → MongoDB (Mongoose)
+  • Secure-api → JSON Web Tokens (jsonwebtoken)
+  • Api → OpenAI SDK
+  • Api → TypeScript
+
+----------------------------------------------------
+Engineering Decision
+----------------------------------------------------
+
+Validation ............. 85
+
+Recommendation ......... RETRY
+
+Risk ................... MEDIUM
+
+Decision ............... RETRY
+
+Reason ................. Validation score 85/100 is below the 90 threshold expected before continuing.
+
+Next Action ............ Retry execution, addressing the outstanding recommendations first.
+
+----------------------------------------------------
+Statistics
+----------------------------------------------------
+
+Files Scanned .......... 10
+Subsystems ............. 4
+Relationships .......... 6
+Findings ............... 5
+Missions ............... 2
+Recommendations ........ 8
+Decision Confidence .... 70%
+Evidence Items ......... 8
+Execution Time ......... 0 ms
+
+----------------------------------------------------
+Pipeline Status
+----------------------------------------------------
+
+✔ Repository Analysis Complete
+✔ Engineering Knowledge Complete
+✔ Engineering Reasoning Complete
+✔ Engineering Planning Complete
+✔ Engineering Missions Complete
+✔ Implementation Requests Complete
+✔ Execution Planning Complete
+✔ Implementation Executor Complete
+✔ Provider Execution Complete
+✔ Validation Complete
+✔ Recommendation Complete
+✔ Reflection Complete
+✔ Adaptive Decision Complete
+
+Overall Status
+SUCCESS
+
+====================================================

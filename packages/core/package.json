@@ -1,0 +1,16 @@
+{
+  "name": "@oram/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pure, dependency-free declarative type definitions shared across ORAM packages. First member: workflow definitions (Workflow/StepId) — the declarative replacement for Runtime's previously-hardcoded execution sequence. Contains no engine implementations, no runtime behavior, and no imports of any other @oram/* package.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.11.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

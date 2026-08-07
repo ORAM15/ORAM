@@ -1,0 +1,111 @@
+┌───────────────────────┐
+│      Repository       │
+└───────────────────────┘
+            │
+            ▼
+┌───────────────────────┐
+│  Repository Analysis  │
+└───────────────────────┘
+            │
+            ▼
+┌───────────────────────┐
+│ Engineering Knowledge │
+└───────────────────────┘
+            │
+            ▼
+┌───────────────────────┐
+│ Engineering Reasoning │
+└───────────────────────┘
+            │
+            ▼
+┌───────────────────────┐
+│ Engineering Planning  │
+└───────────────────────┘
+
+====================================================
+ORAM Engineering Plan
+====================================================
+
+Repository
+✔ Name: concentrated-demo
+✔ Language: JavaScript
+✔ Package Manager: Unknown
+✔ Architecture: Monorepo (packages/* convention)
+
+----------------------------------------------------
+Engineering Knowledge
+----------------------------------------------------
+
+Subsystems
+  • packages/api
+  • packages/secure-api
+  • packages/shared
+  • packages/utils
+
+Relationships
+  • Api → Express
+  • Secure-api → Express
+  • Api → MongoDB (Mongoose)
+  • Secure-api → JSON Web Tokens (jsonwebtoken)
+  • Api → OpenAI SDK
+  • Api → TypeScript
+
+----------------------------------------------------
+Engineering Missions
+----------------------------------------------------
+
+ℹ LOW PRIORITY
+Improve Subsystem Documentation
+
+Rationale:
+Undocumented subsystems slow onboarding and increase the risk of duplicated or conflicting work as the codebase grows. Derived from: opaque-subsystems:2-of-4-subsystems-have-no-technology-attributed-to-them-specifically-packages-shared-packages-utils-responsibilities-or-dependencies-may-be-undeclared-at-the-module-level.
+
+Estimated Effort: Small
+Expected Impact: Reduces onboarding friction and clarifies subsystem ownership and responsibilities.
+
+Tasks:
+  1. Document subsystem responsibilities and dependencies
+     2 of 4 subsystems have no technology attributed to them specifically (packages/shared, packages/utils) -- responsibilities or dependencies may be undeclared at the module level.
+
+--------------------------------------------
+
+⚠ HIGH PRIORITY
+Increase Test Coverage
+
+Rationale:
+Untested code -- especially an exposed API surface -- carries a materially higher risk of undetected regressions. Derived from: untested-api-surface:an-api-framework-express-is-in-use-with-no-automated-testing-framework-detected-untested-api-surface-is-a-higher-risk-gap-than-untested-code-in-general.
+
+Estimated Effort: Small
+Expected Impact: Reduces the risk of undetected regressions and makes future changes safer to make.
+
+Tasks:
+  1. Add automated test coverage
+     An API framework (Express) is in use with no automated testing framework detected -- untested API surface is a higher-risk gap than untested code in general.
+
+--------------------------------------------
+
+----------------------------------------------------
+Statistics
+----------------------------------------------------
+
+Files Scanned .......... 10
+Subsystems ............. 4
+Relationships .......... 6
+Findings ............... 5
+Missions ............... 2
+Tasks .................. 2
+Execution Time ......... 0 ms
+
+----------------------------------------------------
+Pipeline Status
+----------------------------------------------------
+
+✔ Repository Analysis Complete
+✔ Engineering Knowledge Complete
+✔ Engineering Reasoning Complete
+✔ Engineering Planning Complete
+
+Overall Status
+SUCCESS
+
+====================================================

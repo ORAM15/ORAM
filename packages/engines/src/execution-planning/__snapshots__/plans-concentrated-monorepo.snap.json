@@ -1,0 +1,88 @@
+{
+  "sourceProjectName": "concentrated-demo",
+  "sourceTimestamp": "<normalized>",
+  "plans": [
+    {
+      "id": "execution-plan:implementation-request-mission-improve-subsystem-documentation",
+      "requestId": "implementation-request:mission-improve-subsystem-documentation",
+      "title": "Improve Subsystem Documentation",
+      "priority": "Low",
+      "steps": [
+        {
+          "id": "execution-step:implementation-request-mission-improve-subsystem-documentation-0",
+          "order": 0,
+          "action": "CREATE_BRANCH",
+          "description": "Create a working branch for this request."
+        },
+        {
+          "id": "execution-step:implementation-request-mission-improve-subsystem-documentation-1",
+          "order": 1,
+          "action": "CREATE_FILE",
+          "description": "Create or update documentation describing subsystem responsibilities."
+        },
+        {
+          "id": "execution-step:implementation-request-mission-improve-subsystem-documentation-2",
+          "order": 2,
+          "action": "RUN_TESTS",
+          "description": "Run the full test suite to validate the changes."
+        },
+        {
+          "id": "execution-step:implementation-request-mission-improve-subsystem-documentation-3",
+          "order": 3,
+          "action": "COMMIT",
+          "description": "Commit the validated changes."
+        }
+      ],
+      "dependencyIds": [],
+      "order": 0
+    },
+    {
+      "id": "execution-plan:implementation-request-mission-increase-test-coverage",
+      "requestId": "implementation-request:mission-increase-test-coverage",
+      "title": "Increase Test Coverage",
+      "priority": "High",
+      "steps": [
+        {
+          "id": "execution-step:implementation-request-mission-increase-test-coverage-0",
+          "order": 0,
+          "action": "CREATE_BRANCH",
+          "description": "Create a working branch for this request."
+        },
+        {
+          "id": "execution-step:implementation-request-mission-increase-test-coverage-1",
+          "order": 1,
+          "action": "CREATE_FILE",
+          "description": "Create missing automated tests covering the identified gap."
+        },
+        {
+          "id": "execution-step:implementation-request-mission-increase-test-coverage-2",
+          "order": 2,
+          "action": "RUN_TESTS",
+          "description": "Run the full test suite to validate the changes."
+        },
+        {
+          "id": "execution-step:implementation-request-mission-increase-test-coverage-3",
+          "order": 3,
+          "action": "COMMIT",
+          "description": "Commit the validated changes."
+        }
+      ],
+      "dependencyIds": [
+        "execution-plan:implementation-request-mission-improve-subsystem-documentation"
+      ],
+      "order": 1
+    }
+  ],
+  "dependencies": [
+    {
+      "id": "execution-dependency:execution-plan-implementation-request-mission-improve-subsystem-documentation-execution-plan-implementation-request-mission-increase-test-coverage",
+      "planId": "execution-plan:implementation-request-mission-increase-test-coverage",
+      "dependsOnPlanId": "execution-plan:implementation-request-mission-improve-subsystem-documentation"
+    }
+  ],
+  "executionOrder": [
+    "execution-plan:implementation-request-mission-improve-subsystem-documentation",
+    "execution-plan:implementation-request-mission-increase-test-coverage"
+  ],
+  "timestamp": "<normalized>"
+}

@@ -1,0 +1,20 @@
+{
+  "name": "@oram/engines",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Intelligence layer: Observe/Understand/Reason/Decide/Plan/Learn (see docs/ORAM_SPECIFICATION_v1.md Section 4). Phase 3 introduces its first real member: repository-analyzer, wrapping scripts/repository-intelligence.js.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@oram/runtime": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.11.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/**/*.test.ts"
+  }
+}

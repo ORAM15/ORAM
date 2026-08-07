@@ -1,0 +1,7 @@
+# Force LF for committed CLI report snapshots. Without this, Windows checkouts (core.autocrlf=true)
+# rewrite these files to CRLF, which mismatches the LF strings each renderX.test.ts produces at runtime and
+# fails the "full CLI output matches the stored snapshot" test on a totally unrelated Windows machine --
+# not a real regression, just a checkout artifact (see e.g. the missions/requests/execute/execute-plan/
+# recommend CLI snapshot tests around Capability Sprints 5-12). New snapshots (e.g. reflect's own) are
+# protected by this rule from day one instead of hitting the same bug the moment they're committed.
+packages/cli/src/report/__snapshots__/*.snap.txt text eol=lf
