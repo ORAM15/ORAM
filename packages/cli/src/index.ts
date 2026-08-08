@@ -29,6 +29,7 @@ import { recommendCommand } from "./commands/recommend";
 import { reflectCommand } from "./commands/reflect";
 import { historyCommand } from "./commands/history";
 import { decideCommand } from "./commands/decide";
+import { engineerCommand } from "./commands/engineer";
 import { validateCommand } from "./commands/validate";
 import { inspectCommand } from "./commands/inspect";
 import { dashboardCommand } from "./commands/dashboard";
@@ -51,6 +52,7 @@ function readVersion(): string {
 const USAGE = `oram -- Orchestrated Repository Autonomous Manager
 
 Usage:
+  oram engineer <repository> Run every ORAM engine end-to-end (the flagship command)
   oram analyze <path>        Run Repository Analysis -> Engineering Knowledge -> Engineering Reasoning
   oram plan <path>           Run the full pipeline through Engineering Planning
   oram missions <path>       Run the full pipeline through Engineering Missions (the Mission Graph)
@@ -74,8 +76,9 @@ async function versionCommand(): Promise<number> {
   return 0;
 }
 
-/** Command name -> handler. The original fixed v1 command surface (docs/ORAM_SPECIFICATION_v1.md's companion CLI table lives in ORAM_V3_MIGRATION_PLAN.md Section 6), plus `help`/`version` (Sprint 4.5), `missions` (Sprint 5), `requests` (Sprint 6), `execute-plan` (Sprint 7), a real implementation of `execute` (Sprint 8, superseding its earlier stub -- see execute.ts's own header comment), `recommend` (Sprint 11), `reflect` (Sprint 12), `history` (Sprint 13), and `decide` (Sprint 14) -- each one pipeline stage past the last. Sprints 9 (Provider Execution) and 10 (Validation) added no CLI command of their own. */
+/** Command name -> handler. The original fixed v1 command surface (docs/ORAM_SPECIFICATION_v1.md's companion CLI table lives in ORAM_V3_MIGRATION_PLAN.md Section 6), plus `help`/`version` (Sprint 4.5), `missions` (Sprint 5), `requests` (Sprint 6), `execute-plan` (Sprint 7), a real implementation of `execute` (Sprint 8, superseding its earlier stub -- see execute.ts's own header comment), `recommend` (Sprint 11), `reflect` (Sprint 12), `history` (Sprint 13), and `decide` (Sprint 14) -- each one pipeline stage past the last. Sprints 9 (Provider Execution) and 10 (Validation) added no CLI command of their own. Sprint 15 added `engineer`, the flagship orchestration command that runs every engine end-to-end. */
 export const COMMANDS: Readonly<Record<string, CommandHandler>> = {
+  engineer: engineerCommand,
   init: initCommand,
   run: runCommand,
   analyze: analyzeCommand,
