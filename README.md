@@ -81,6 +81,18 @@ globally as `oram`.
 
 ## Usage
 
+The flagship command is `oram engineer` — it runs every ORAM engine sequentially (Repository Analysis →
+Engineering Knowledge → Engineering Reasoning → Engineering Planning → Engineering Missions →
+Implementation Requests → Execution Planning → Implementation Executor → Recommendation Engine →
+Reflection Engine → Engineering Memory → Adaptive Decision Engine) and prints one boot-sequence-style
+report ending in the FINAL ENGINEERING DECISION:
+
+```bash
+oram engineer .
+```
+
+Each pipeline stage also has its own command:
+
 ```bash
 oram analyze .
 oram plan .
