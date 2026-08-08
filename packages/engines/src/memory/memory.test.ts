@@ -8,7 +8,9 @@
  *   - multiple repositories
  *   - statistics (explicit, hand-computed averages)
  *   - a stored JSON snapshot of buildRunSnapshot()'s output for concentrated-monorepo
- *   - deterministic ids (repositoryId stable per repository; runId unique per snapshot)
+ *   - deterministic ids (repositoryId stable per repository AND machine-independent -- derived from the
+ *     repository root's basename, never its absolute path, so Windows/Linux/macOS checkouts of the same
+ *     repository agree; runId unique per snapshot)
  *   - a smoke test against this actual repository
  *
  * Run with: node --import tsx --test packages/engines/src/memory/memory.test.ts
@@ -28,7 +30,7 @@ import { runAll as runProviderExecutionAll } from "../provider-execution/Provide
 import { validateAll } from "../validation/ValidationEngine";
 import { buildRecommendationSet } from "../recommendation/analysis/build-recommendations";
 import { buildReflectionReport } from "../reflection/analysis/build-reflection";
-import { buildRunSnapshot } from "./analysis/build-run-snapshot";
+import { buildRunSnapshot, makeRepositoryId } from "./analysis/build-run-snapshot";
 import type { RunSnapshot, RunSnapshotInputs } from "./analysis/types";
 import { MemoryStore } from "./MemoryStore";
 import { MemoryEngine } from "./MemoryEngine";
@@ -114,6 +116,23 @@ test("deterministic ids: the same repositoryRoot always produces the same reposi
 
   assert.equal(first.repositoryId, second.repositoryId);
   assert.notEqual(first.repositoryId, buildRunSnapshot(snapshotInputsFor(path.join(REPO_ANALYZER_FIXTURES, "minimal"))).repositoryId);
+});
+
+test("deterministic ids: repositoryId is machine-independent -- basename-derived, never the absolute path", () => {
+  // The regression this guards: an absolute-path-derived id baked each machine's directory layout into the
+  // stored snapshot (repository:d-brdr-... on one machine vs repository:home-runner-... on CI).
+  const inputs = snapshotInputsFor(path.join(REASONING_FIXTURES, "concentrated-monorepo"));
+  assert.equal(buildRunSnapshot(inputs).repositoryId, "repository:concentrated-monorepo");
+});
+
+test("makeRepositoryId: Windows-style and POSIX-style paths to the same repository produce the same id", () => {
+  const fromWindows = makeRepositoryId("D:\\work\\ORAM");
+  const fromLinuxCi = makeRepositoryId("/home/runner/work/ORAM/ORAM");
+  const fromMacos = makeRepositoryId("/Users/dev/ORAM");
+
+  assert.equal(fromWindows, "repository:oram");
+  assert.equal(fromLinuxCi, fromWindows);
+  assert.equal(fromMacos, fromWindows);
 });
 
 test("deterministic ids: runId is unique per snapshot, never repeated", () => {

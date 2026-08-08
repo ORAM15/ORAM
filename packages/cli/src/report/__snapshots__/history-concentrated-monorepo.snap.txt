@@ -99,7 +99,7 @@ Relationships
 Run History
 ----------------------------------------------------
 
-Repository: repository:d-brdr-development-active-projects-oram-packages-engines-src-engineering-reasoning-fixtures-concentrated-monorepo
+Repository: repository:concentrated-monorepo
 Total Runs: 1
 Latest Run: RUN-<normalized>
 Average Score: 85/100
