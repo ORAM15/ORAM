@@ -21,6 +21,7 @@
 import type { OramEvent } from "@oram/events";
 import type { RuntimeContext } from "./RuntimeContext";
 import type { ArtifactRef } from "./ArtifactStore";
+import { RunArtifacts } from "./RunArtifacts";
 import { type Artifact, createArtifact } from "./artifacts/artifact";
 
 /** PRELIMINARY shape -- see the TODO(engines) note above. */
@@ -29,8 +30,18 @@ export interface EngineDescriptor<TOutput = unknown> {
   readonly stage: string;
   /** Used as ArtifactRef.name for this engine's one output artifact. */
   readonly artifactName: string;
-  /** The engine's own pure computation. Receives RuntimeContext for read-only inputs (config, repositoryRoot) only -- never to write an artifact or publish an event itself; that remains EngineRunner's job. */
-  run(context: RuntimeContext): Promise<TOutput> | TOutput;
+  /**
+   * The engine's own pure computation. Receives RuntimeContext for read-only inputs (config, repositoryRoot)
+   * only -- never to write an artifact or publish an event itself; that remains EngineRunner's job.
+   *
+   * `artifacts` (Capability Sprint 17 -- see RunArtifacts.ts) is a read-only view of THIS run's already
+   * persisted artifacts, so a downstream engine can consume upstream output instead of recomputing it.
+   * Optional and additive: every pre-Sprint-17 engine ignores it and keeps its exact previous behavior;
+   * engines that declare upstream dependencies read them through it. Always supplied by EngineRunner.run();
+   * only ever absent when an engine is invoked directly outside the Runtime (e.g. a unit test calling
+   * descriptor.run(context) by hand).
+   */
+  run(context: RuntimeContext, artifacts?: RunArtifacts): Promise<TOutput> | TOutput;
   /** Builds the typed OramEvent (@oram/events) to publish once this engine's output has been persisted. */
   buildEvent(runId: string, output: TOutput, ref: ArtifactRef): OramEvent;
 }
@@ -57,7 +68,11 @@ export class EngineRunner {
 
     let output: TOutput;
     try {
-      output = await engine.run(this.context);
+      // Sprint 17: every engine invocation now receives a run-scoped, read-only view of this run's already
+      // persisted artifacts (see RunArtifacts.ts) -- the handoff that lets a downstream engine consume
+      // upstream output instead of recomputing it. Purely additive: engines that ignore the second argument
+      // behave exactly as before.
+      output = await engine.run(this.context, new RunArtifacts(this.context.artifactStore, runId));
     } catch (error) {
       const durationMs = Date.now() - startedAt;
       const message = error instanceof Error ? error.message : String(error);

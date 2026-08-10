@@ -66,6 +66,22 @@ human approval is required).
 runs git, never invokes an LLM, and never modifies the repository — it only produces the proposal
 artifact. Actual GitHub publication belongs to a future Runtime/Publisher layer.
 
+## Two execution styles
+
+- **Direct engine API** — every stage is a pure `buildX()` function you compose by hand (this is what the
+  per-stage CLI commands do). Ideal for isolated, deterministic testing; recomputes upstream stages by
+  design.
+- **Runtime pipeline execution** (Capability Sprint 17) — engines invoked through `@oram/runtime`'s
+  `EngineRunner` receive a run-scoped `RunArtifacts` view and consume artifacts already persisted by
+  earlier stages of the same run instead of recomputing them. Same-run identity is enforced by the
+  `ArtifactStore`'s own addressing (every artifact is keyed by `runId`), and a missing required artifact
+  fails with a clear, deterministic error. Run `oram handoff .` to see this working: it persists every
+  upstream artifact once, then drives the Adaptive Decision and Pull Request Engines through the real
+  `EngineRunner` with their recompute fallbacks forbidden.
+
+ORAM is moving toward a fully artifact-driven execution pipeline: every arrow in the diagram above should
+increasingly represent an artifact handoff rather than a recomputation.
+
 ## Two implementations, one lineage
 
 This repository contains two pipelines on purpose:

@@ -278,7 +278,23 @@ multiple repositories, statistics, a stored JSON snapshot, deterministic ids, a 
 plus the CLI's own `renderHistoryReport.test.ts` for coverage. No Runtime changes, no EngineRunner changes, no
 modifications to any protected package (Repository Analysis through Reflection) -- only additive CLI files.
 
-**Capability Sprint 16 (current):** added `pull-request` -- the "PROPOSE CHANGE" stage after Adaptive
+**Capability Sprint 17 (current) — Runtime Artifact Handoff:** the Adaptive Decision Engine and the Pull
+Request Engine's `EngineDescriptor` paths now consume the current run's persisted artifacts instead of
+recomputing the pipeline, via `@oram/runtime`'s new `RunArtifacts` argument to `run()`. Each engine declares
+its upstream dependencies explicitly (`DECISION_UPSTREAM_ARTIFACTS`: validation, recommendation, reflection;
+`PULL_REQUEST_UPSTREAM_ARTIFACTS`: those plus implementation-requests, execution-planning, and the
+adaptive-decision output itself) and loads them with `loadDecisionInputsFromRun()` /
+`loadPullRequestInputsFromRun()`. Behavior contract, in order: all declared artifacts available → consumed
+directly, zero recomputation; NONE available → the pre-existing, explicitly documented recompute fallback
+(unchanged from Sprints 14/16); SOME but not all → a loud, deterministic error naming exactly the missing
+`stage/name` pairs (a partial run is broken; silently recomputing would discard real artifacts). Decision
+semantics, the pure `buildEngineeringDecision()`/`buildPullRequestProposal()` functions, the direct
+`DecisionInputs`/`PullRequestInputs` APIs, and every existing snapshot are unchanged. Proven by
+`adaptive-decision.runtime.test.ts` and `pull-request.runtime.test.ts` (producer→consumer chains through the
+real `EngineRunner`/`FileSystemArtifactStore` with recompute fallbacks wired to THROW), plus the CLI's
+`oram handoff <path>` demo command.
+
+**Capability Sprint 16:** added `pull-request` -- the "PROPOSE CHANGE" stage after Adaptive
 Decision: `PullRequestEngine`/`buildPullRequestProposal()` converts the run's `EngineeringDecision` plus its
 already-computed implementation artifacts (`ImplementationRequestSet`, `ExecutionPlanSet`,
 `ValidationResult`, `RecommendationSet`, `ReflectionReport`) into one deterministic, structured

@@ -28,7 +28,24 @@ Owns exactly five things, and nothing else:
 
 ## Status
 
-**Phase 2 (current):** `Lifecycle`, `EventBus`, `ArtifactStore`, and `Runtime.start()` are functionally
+**Capability Sprint 17 (current) — Runtime Artifact Handoff:** `EngineRunner.run()` now passes every engine
+a second, optional argument: `RunArtifacts` (`src/RunArtifacts.ts`), a read-only, run-scoped view of the
+current run's already-persisted artifacts (`has()` / `require()` / `missing()`), backed directly by the
+existing `ArtifactStore` — not a second storage abstraction. This closes the long-disclosed "an engine
+receives no runId, so it cannot read any prior stage's artifact for THIS run" limitation: a downstream
+engine can now declare its upstream dependencies explicitly (see `@oram/engines`'
+`DECISION_UPSTREAM_ARTIFACTS` / `PULL_REQUEST_UPSTREAM_ARTIFACTS`) and consume artifacts instead of
+recomputing the pipeline. Same-run isolation comes for free from `ArtifactRef`'s own addressing (`runId` is
+part of every key), and a missing required artifact fails with the store's own deterministic error naming
+the runId/stage/name. The change is purely additive: `run(context)` engines ignore the new argument and
+behave exactly as before. This is the distinction between ORAM's two execution styles:
+
+- **Direct engine API** — `buildX()` pure functions composed by hand (what the CLI's per-stage commands do):
+  ideal for isolated, deterministic testing; recomputes by design.
+- **Runtime pipeline execution** — engines invoked through `EngineRunner` consume the current run's
+  persisted artifacts; every arrow in the pipeline is an artifact handoff, not a recomputation.
+
+**Phase 2:** `Lifecycle`, `EventBus`, `ArtifactStore`, and `Runtime.start()` are functionally
 implemented — a real `RunLifecycle` state machine, a real in-memory `EventBus`, a real
 `FileSystemArtifactStore` writing to `.oram/runs/<run-id>/artifacts/<stage>/<name>.json`, and `start()` now
 drives ANALYZING → PLANNING → AWAITING_APPROVAL through four *placeholder* engines (see `Runtime.ts`'s
