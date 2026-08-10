@@ -3,4 +3,4 @@ export type { DecisionOutcome } from "./analysis/rules";
 export { evaluateDecision, computeValidationScore, policyId, RETRY_VALIDATION_SCORE_THRESHOLD } from "./analysis/rules";
 export { buildEngineeringDecision } from "./analysis/build-decision";
 
-export { DecisionEngine, createAdaptiveDecisionEngine } from "./DecisionEngine";
+export { DecisionEngine, createAdaptiveDecisionEngine, loadDecisionInputsFromRun, DECISION_UPSTREAM_ARTIFACTS } from "./DecisionEngine";

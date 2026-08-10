@@ -2,4 +2,4 @@ export type { PullRequestInputs, PullRequestProposal, ProposalKind, ProposedChan
 export { buildPullRequestProposal } from "./analysis/build-pull-request-proposal";
 export { ACTION_STATEMENTS, BRANCH_PREFIX, DEFAULT_BASE_BRANCH, buildBranchName, buildTitle, determineProposalKind, requiresHumanApproval } from "./analysis/rules";
 
-export { PullRequestEngine, createPullRequestEngine } from "./PullRequestEngine";
+export { PullRequestEngine, createPullRequestEngine, loadPullRequestInputsFromRun, PULL_REQUEST_UPSTREAM_ARTIFACTS } from "./PullRequestEngine";

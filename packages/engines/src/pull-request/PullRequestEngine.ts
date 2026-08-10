@@ -12,11 +12,15 @@
  *
  * CONCRETE LIMITATION -- the same gaps disclosed in every prior stage's own EngineDescriptor wrapper:
  *
- *   1. EngineDescriptor.run(context) receives no `runId`, so this cannot read any prior stage's actual
- *      persisted artifact for THIS run. Default behavior recomputes the entire pipeline from scratch via
- *      buildRepositoryAnalysis() + ... + buildEngineeringDecision() -- same deterministic result under
- *      MemoryProvider/MemoryAdapter, extra CPU, no Runtime change. A caller holding the real upstream
- *      pipeline output can bypass this via the optional `loadInputs` parameter below.
+ *   1. PARTIALLY CLOSED by Capability Sprint 17 (Runtime Artifact Handoff): EngineDescriptor.run() now
+ *      receives a RunArtifacts view of THIS run's persisted artifacts, and this engine declares its upstream
+ *      dependencies explicitly (PULL_REQUEST_UPSTREAM_ARTIFACTS below). When every declared upstream
+ *      artifact is available for the current run, they are consumed directly -- no recomputation. When NONE
+ *      are available, the pre-existing, explicitly documented fallback still applies: recompute the pipeline
+ *      from scratch via buildRepositoryAnalysis() + ... + buildEngineeringDecision() -- same deterministic
+ *      result under MemoryProvider/MemoryAdapter, extra CPU. A PARTIAL set of upstream artifacts is a broken
+ *      run and fails loudly (see loadPullRequestInputsFromRun). A caller holding the real upstream pipeline
+ *      output can still bypass everything via the optional `loadInputs` parameter below.
  *
  *   2. Per DecisionEngine.ts's own disclosed limitation, the default `previousRun` for the decision is
  *      honestly always null today (no cross-process MemoryStore persistence yet).
@@ -27,8 +31,14 @@
  *      correct long-term fix, left for a future PR.
  */
 
-import type { EngineDescriptor, ArtifactRef, RuntimeContext } from "@oram/runtime";
+import type { EngineDescriptor, ArtifactRef, RuntimeContext, RunArtifacts, ArtifactDependency } from "@oram/runtime";
 import type { OramEvent } from "@oram/events";
+import type { ImplementationRequestSet } from "../implementation-requests/analysis/types";
+import type { ExecutionPlanSet } from "../execution-planning/analysis/types";
+import type { ValidationResult } from "../validation/analysis/types";
+import type { RecommendationSet } from "../recommendation/analysis/types";
+import type { ReflectionReport } from "../reflection/analysis/types";
+import type { EngineeringDecision } from "../adaptive-decision/analysis/types";
 import { buildRepositoryAnalysis } from "../repository-analyzer/analysis/build-analysis";
 import { buildEngineeringKnowledge } from "../engineering-knowledge/analysis/build-knowledge";
 import { buildEngineeringReasoning } from "../engineering-reasoning/analysis/build-reasoning";
@@ -69,6 +79,45 @@ function defaultLoadInputs(context: RuntimeContext): PullRequestInputs {
   return { repositoryRoot: context.repositoryRoot, requestSet, planSet, validationResult, recommendationSet, reflectionReport, decision };
 }
 
+/** The upstream artifacts this engine consumes from the current run, declared explicitly (Sprint 17) -- exactly the six already-computed artifacts PullRequestInputs bundles (repositoryRoot comes from RuntimeContext, not an artifact). */
+export const PULL_REQUEST_UPSTREAM_ARTIFACTS: ReadonlyArray<ArtifactDependency> = [
+  { stage: "implementation-requests", name: "implementation-requests" },
+  { stage: "execution-planning", name: "execution-planning" },
+  { stage: "validation", name: "validation" },
+  { stage: "recommendation", name: "recommendation" },
+  { stage: "reflection", name: "reflection" },
+  { stage: "adaptive-decision", name: "engineering-decision" },
+];
+
+/**
+ * Sprint 17 artifact path: loads PullRequestInputs from the current run's persisted artifacts.
+ *   - Every declared upstream artifact available -> the loaded inputs (no recomputation).
+ *   - None available -> null; the caller applies the pre-existing, documented recompute fallback.
+ *   - SOME available but not all -> a loud, deterministic error naming exactly what is missing: a partial
+ *     run is broken, and silently recomputing would discard the real artifacts that DO exist.
+ */
+export async function loadPullRequestInputsFromRun(context: RuntimeContext, artifacts: RunArtifacts): Promise<PullRequestInputs | null> {
+  const missing = await artifacts.missing(PULL_REQUEST_UPSTREAM_ARTIFACTS);
+  if (missing.length === PULL_REQUEST_UPSTREAM_ARTIFACTS.length) return null;
+  if (missing.length > 0) {
+    const missingList = missing.map((dependency) => `${dependency.stage}/${dependency.name}`).join(", ");
+    throw new Error(
+      `Pull Request Engine: run "${artifacts.runId}" has some upstream artifacts but is missing: ${missingList}. ` +
+        `Refusing to mix persisted artifacts with recomputation -- re-run the missing upstream stage(s) for this run.`
+    );
+  }
+
+  return {
+    repositoryRoot: context.repositoryRoot,
+    requestSet: await artifacts.require<ImplementationRequestSet>("implementation-requests", "implementation-requests"),
+    planSet: await artifacts.require<ExecutionPlanSet>("execution-planning", "execution-planning"),
+    validationResult: await artifacts.require<ValidationResult>("validation", "validation"),
+    recommendationSet: await artifacts.require<RecommendationSet>("recommendation", "recommendation"),
+    reflectionReport: await artifacts.require<ReflectionReport>("reflection", "reflection"),
+    decision: await artifacts.require<EngineeringDecision>("adaptive-decision", "engineering-decision"),
+  };
+}
+
 export function createPullRequestEngine(
   loadInputs: (context: RuntimeContext) => PullRequestInputs = defaultLoadInputs
 ): EngineDescriptor<PullRequestProposal> {
@@ -76,8 +125,8 @@ export function createPullRequestEngine(
   return {
     stage: "pull-request",
     artifactName: "pull-request-proposal",
-    run(context: RuntimeContext): PullRequestProposal {
-      const inputs = loadInputs(context);
+    async run(context: RuntimeContext, artifacts?: RunArtifacts): Promise<PullRequestProposal> {
+      const inputs = (artifacts && (await loadPullRequestInputsFromRun(context, artifacts))) ?? loadInputs(context);
       return engine.propose(inputs);
     },
     buildEvent(runId: string, _output: PullRequestProposal, _ref: ArtifactRef): OramEvent {

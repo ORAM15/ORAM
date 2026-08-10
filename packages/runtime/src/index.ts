@@ -29,6 +29,9 @@ export { createRuntimeContext } from "./RuntimeContext";
 export type { EngineDescriptor } from "./EngineRunner";
 export { EngineRunner } from "./EngineRunner";
 
+export type { ArtifactDependency } from "./RunArtifacts";
+export { RunArtifacts } from "./RunArtifacts";
+
 export type { Artifact } from "./artifacts/artifact";
 
 export type { RuntimeBuilderOptions } from "./RuntimeBuilder";

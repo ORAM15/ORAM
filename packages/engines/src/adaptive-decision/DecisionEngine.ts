@@ -12,11 +12,17 @@
  * CONCRETE LIMITATION -- the same gaps disclosed in every prior stage's own EngineDescriptor wrapper, plus
  * the one specific to this stage's fourth input:
  *
- *   1. EngineDescriptor.run(context) receives no `runId`, so this cannot read any prior stage's actual
- *      persisted artifact for THIS run. Default behavior recomputes the entire pipeline from scratch via
+ *   1. PARTIALLY CLOSED by Capability Sprint 17 (Runtime Artifact Handoff): EngineDescriptor.run() now
+ *      receives a RunArtifacts view of THIS run's persisted artifacts, and this engine declares its upstream
+ *      dependencies explicitly (DECISION_UPSTREAM_ARTIFACTS below). When every declared upstream artifact is
+ *      available for the current run, they are consumed directly -- no recomputation. When NONE are
+ *      available (e.g. a direct invocation outside a full pipeline run, or a pre-Sprint-17 caller), the
+ *      pre-existing, explicitly documented fallback still applies: recompute the pipeline from scratch via
  *      buildRepositoryAnalysis() + ... + buildReflectionReport() -- same deterministic result under
- *      MemoryProvider/MemoryAdapter, extra CPU, no Runtime change. A caller holding the real upstream
- *      pipeline output can bypass this via the optional `loadInputs` parameter below.
+ *      MemoryProvider/MemoryAdapter, extra CPU. A PARTIAL set of upstream artifacts is a broken run and
+ *      fails loudly (see loadDecisionInputsFromRun) -- silently recomputing over real artifacts would
+ *      discard them. A caller holding the real upstream pipeline output can still bypass everything via the
+ *      optional `loadInputs` parameter below.
  *
  *   2. Per MemoryStore.ts's own disclosed limitation, nothing persists a MemoryStore across process
  *      invocations -- so the default `previousRun` lookup below always queries a freshly constructed, empty
@@ -30,8 +36,11 @@
  *      long-term fix, left for a future PR.
  */
 
-import type { EngineDescriptor, ArtifactRef, RuntimeContext } from "@oram/runtime";
+import type { EngineDescriptor, ArtifactRef, RuntimeContext, RunArtifacts, ArtifactDependency } from "@oram/runtime";
 import type { OramEvent } from "@oram/events";
+import type { ValidationResult } from "../validation/analysis/types";
+import type { RecommendationSet } from "../recommendation/analysis/types";
+import type { ReflectionReport } from "../reflection/analysis/types";
 import { buildRepositoryAnalysis } from "../repository-analyzer/analysis/build-analysis";
 import { buildEngineeringKnowledge } from "../engineering-knowledge/analysis/build-knowledge";
 import { buildEngineeringReasoning } from "../engineering-reasoning/analysis/build-reasoning";
@@ -78,6 +87,45 @@ function defaultLoadInputs(context: RuntimeContext): DecisionInputs {
   return { reflectionReport, validationResult, recommendationSet, previousRun };
 }
 
+/**
+ * The upstream artifacts this engine consumes from the current run, declared explicitly (Sprint 17) --
+ * exactly the three whole-batch inputs buildEngineeringDecision() reasons over. `previousRun` is deliberately
+ * NOT an artifact dependency: the memory stage's `run-snapshot` artifact for THIS run describes this run
+ * itself, not a previous one, so reading it here would be dishonest (the same reasoning `oram engineer`'s own
+ * header documents); previousRun stays null until cross-run Memory persistence exists.
+ */
+export const DECISION_UPSTREAM_ARTIFACTS: ReadonlyArray<ArtifactDependency> = [
+  { stage: "validation", name: "validation" },
+  { stage: "recommendation", name: "recommendation" },
+  { stage: "reflection", name: "reflection" },
+];
+
+/**
+ * Sprint 17 artifact path: loads DecisionInputs from the current run's persisted artifacts.
+ *   - Every declared upstream artifact available -> the loaded inputs (no recomputation).
+ *   - None available -> null; the caller applies the pre-existing, documented recompute fallback.
+ *   - SOME available but not all -> a loud, deterministic error naming exactly what is missing: a partial
+ *     run is broken, and silently recomputing would discard the real artifacts that DO exist.
+ */
+export async function loadDecisionInputsFromRun(artifacts: RunArtifacts): Promise<DecisionInputs | null> {
+  const missing = await artifacts.missing(DECISION_UPSTREAM_ARTIFACTS);
+  if (missing.length === DECISION_UPSTREAM_ARTIFACTS.length) return null;
+  if (missing.length > 0) {
+    const missingList = missing.map((dependency) => `${dependency.stage}/${dependency.name}`).join(", ");
+    throw new Error(
+      `Adaptive Decision Engine: run "${artifacts.runId}" has some upstream artifacts but is missing: ${missingList}. ` +
+        `Refusing to mix persisted artifacts with recomputation -- re-run the missing upstream stage(s) for this run.`
+    );
+  }
+
+  const validationResult = await artifacts.require<ValidationResult>("validation", "validation");
+  const recommendationSet = await artifacts.require<RecommendationSet>("recommendation", "recommendation");
+  const reflectionReport = await artifacts.require<ReflectionReport>("reflection", "reflection");
+
+  // See this file's own CONCRETE LIMITATION #2 -- previousRun remains honestly null (no cross-run persistence).
+  return { reflectionReport, validationResult, recommendationSet, previousRun: null };
+}
+
 export function createAdaptiveDecisionEngine(
   loadInputs: (context: RuntimeContext) => DecisionInputs = defaultLoadInputs
 ): EngineDescriptor<EngineeringDecision> {
@@ -85,8 +133,8 @@ export function createAdaptiveDecisionEngine(
   return {
     stage: "adaptive-decision",
     artifactName: "engineering-decision",
-    run(context: RuntimeContext): EngineeringDecision {
-      const inputs = loadInputs(context);
+    async run(context: RuntimeContext, artifacts?: RunArtifacts): Promise<EngineeringDecision> {
+      const inputs = (artifacts && (await loadDecisionInputsFromRun(artifacts))) ?? loadInputs(context);
       return engine.decide(inputs);
     },
     buildEvent(runId: string, _output: EngineeringDecision, _ref: ArtifactRef): OramEvent {
