@@ -10,7 +10,7 @@
  * @oram/engines (the summary's "Repository Health" is Engineering Memory's own RunSnapshot.validationScore,
  * "Architecture" is the same describeArchitecture() every other report uses); this file only decides how to
  * lay it out. The checklist itself is honest, not decorative: the input type requires every stage's output,
- * so this function is only callable once all twelve engines have actually run.
+ * so this function is only callable once all thirteen engines have actually run.
  */
 import type {
   RepositoryAnalysis,
@@ -19,6 +19,7 @@ import type {
   EngineeringPlan,
   RunSnapshot,
   EngineeringDecision,
+  PullRequestProposal,
 } from "@oram/engines";
 import { RULE_DOUBLE, RULE_SINGLE, describeArchitecture, statLine } from "./shared";
 
@@ -30,10 +31,12 @@ export interface EngineerReportInput {
   /** Engineering Memory's record of this very run -- the source of the summary's "Repository Health" score. */
   readonly snapshot: RunSnapshot;
   readonly decision: EngineeringDecision;
+  /** The Pull Request Engine's deterministic proposal (Capability Sprint 16) -- rendered, never published. */
+  readonly proposal: PullRequestProposal;
   readonly elapsedMs: number;
 }
 
-/** The twelve engines `oram engineer` runs, in execution order, under this Sprint's own stage names. */
+/** The thirteen engines `oram engineer` runs, in execution order, under each Sprint's own stage names. */
 const BOOT_SEQUENCE: ReadonlyArray<string> = [
   "Repository Analysis",
   "Engineering Knowledge",
@@ -47,6 +50,7 @@ const BOOT_SEQUENCE: ReadonlyArray<string> = [
   "Reflection Engine",
   "Engineering Memory",
   "Adaptive Decision Engine",
+  "Pull Request Engine",
 ];
 
 function renderBootSection(analysis: RepositoryAnalysis): string[] {
@@ -72,6 +76,22 @@ function renderFinalDecisionSection(decision: EngineeringDecision): string[] {
     statLine("Risk", decision.riskLevel),
     "",
     statLine("Next Action", decision.nextAction),
+  ];
+}
+
+function renderProposalSection(proposal: PullRequestProposal): string[] {
+  return [
+    RULE_SINGLE,
+    "PULL REQUEST PROPOSAL",
+    RULE_SINGLE,
+    "",
+    statLine("Kind", proposal.kind),
+    "",
+    statLine("Branch", proposal.branchName ?? "(none -- no PR should be created)"),
+    "",
+    statLine("Title", proposal.title),
+    "",
+    statLine("Human Approval", proposal.humanApprovalRequired ? "REQUIRED" : "NOT REQUIRED"),
   ];
 }
 
@@ -107,12 +127,15 @@ export function renderEngineerReport({
   plan,
   snapshot,
   decision,
+  proposal,
   elapsedMs,
 }: EngineerReportInput): string {
   const lines: string[] = [
     ...renderBootSection(analysis),
     "",
     ...renderFinalDecisionSection(decision),
+    "",
+    ...renderProposalSection(proposal),
     "",
     ...renderSummarySection(analysis, knowledge, reasoning, plan, snapshot, decision, elapsedMs),
     "",

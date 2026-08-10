@@ -1,0 +1,168 @@
+┌─────────────────────────┐
+│       Repository        │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│   Repository Analysis   │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Knowledge  │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Reasoning  │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Planning   │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Missions   │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ Implementation Requests │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│   Execution Planning    │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ Implementation Executor │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│   Provider Execution    │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│       Validation        │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│     Recommendation      │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│       Reflection        │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│    Adaptive Decision    │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Pull Request Proposal  │
+└─────────────────────────┘
+
+====================================================
+ORAM Pull Request Proposal
+====================================================
+
+Repository
+✔ Name: concentrated-demo
+✔ Language: JavaScript
+✔ Package Manager: Unknown
+✔ Architecture: Monorepo (packages/* convention)
+
+----------------------------------------------------
+Pull Request Proposal
+----------------------------------------------------
+
+Kind ................... IMPLEMENTATION
+Decision ............... RETRY
+Risk ................... MEDIUM
+Validation Score ....... 85
+Branch ................. oram/improve-subsystem-documentation
+Base Branch ............ main
+Title .................. ORAM: Improve Subsystem Documentation (+1 more)
+Human Approval ......... NOT REQUIRED
+Proposed Changes ....... 2
+Verification Steps ..... 1
+
+----------------------------------------------------
+PR Body
+----------------------------------------------------
+
+## Summary
+
+ORAM proposes 2 implementation change(s) for this repository. Validation score 85/100 is below the 90 threshold expected before continuing.
+
+## Decision
+
+RETRY — Retry the implementation, addressing the outstanding recommendations first, then update this proposal.
+
+## Risk
+
+MEDIUM
+
+## Proposed Changes
+
+- **Improve Subsystem Documentation** (subsystems: packages/shared, packages/utils): Improve Subsystem Documentation -- Reduces onboarding friction and clarifies subsystem ownership and responsibilities.
+- **Increase Test Coverage**: Increase Test Coverage -- Reduces the risk of undetected regressions and makes future changes safer to make.
+
+## Validation
+
+Validation score: 85/100 — 0 ERROR, 8 WARNING, 0 INFO issue(s).
+
+8 recommendation(s): 0 ERROR, 8 WARNING, 0 INFO.
+
+## Reflection
+
+2 reflection finding(s) raised from 8 warning-level issue(s), 8 recommendation(s) across 8 validated patch(es).
+- [WARNING] Minor quality issues remain: 8 WARNING-severity issue(s) remain even though no ERROR-severity issue was found.
+- [INFO] Multiple recommendations exist: 8 recommendation(s) were generated from this validation batch.
+
+## Verification
+
+- Run the full test suite to validate the changes.
+
+## Safety
+
+Human approval is not required by policy for this proposal; a future Publisher layer may still enforce its own review gate.
+
+This proposal was generated deterministically by the ORAM Pull Request Engine. ORAM did not modify this repository, did not call git or GitHub, and will not publish anything -- publication belongs to a future Runtime/Publisher layer.
+
+----------------------------------------------------
+Statistics
+----------------------------------------------------
+
+Files Scanned .......... 10
+Subsystems ............. 4
+Findings ............... 5
+Missions ............... 2
+Requests ............... 2
+Execution Plans ........ 2
+Execution Time ......... 0 ms
+
+----------------------------------------------------
+Pipeline Status
+----------------------------------------------------
+
+✔ Adaptive Decision Complete
+✔ Pull Request Proposal Complete
+
+Overall Status
+SUCCESS
+
+Note: ORAM did not publish anything. This is a deterministic
+proposal only -- publication belongs to a future Publisher layer.
+
+====================================================
