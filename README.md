@@ -79,6 +79,15 @@ npm link
 `npm run build` bundles `packages/cli/src/bin.ts` into `packages/cli/dist/bin.js`; `npm link` exposes it
 globally as `oram`.
 
+To try the CLI straight from a clone without building or linking, run it in dev mode via `tsx`
+(`npm install` provides it):
+
+```bash
+npx tsx packages/cli/src/bin.ts engineer .
+```
+
+Every `oram <command>` in this README works the same way as `npx tsx packages/cli/src/bin.ts <command>`.
+
 ## Usage
 
 The recommended entry point is the flagship command:
