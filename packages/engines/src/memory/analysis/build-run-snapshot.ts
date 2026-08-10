@@ -4,9 +4,12 @@
  * never re-inspects a repository, never re-evaluates a patch, never re-reasons about anything -- it only
  * summarizes and records.
  *
- * `repositoryId` is deterministic: makeId("repository", repositoryRoot) always produces the same id for the
- * same repository path, exactly like every other stable id in this pipeline (see
- * repository-analyzer/analysis/identity.ts). `runId`/`timestamp` are the one place this stage cannot be a
+ * `repositoryId` is deterministic AND machine-independent: makeRepositoryId() below derives it from the
+ * repository root's basename (its directory name), never from the absolute path -- the same repository
+ * checked out at D:\work\ORAM, /home/runner/work/ORAM/ORAM, or /Users/dev/ORAM produces the same id, so the
+ * stored snapshots in this package and packages/cli stay identical across Windows, Linux, and macOS
+ * (developer machines vs CI). Ids stay stable per repository exactly like every other id in this pipeline
+ * (see repository-analyzer/analysis/identity.ts). `runId`/`timestamp` are the one place this stage cannot be a
  * pure function of its inputs alone -- a run's identity is inherently tied to WHEN it happened, not just
  * WHAT it analyzed (the same reason @oram/runtime's own Runtime.ts has a `generateRunId()` doing the exact
  * same timestamp-derived thing, cited here as the established precedent rather than inventing a new scheme).
@@ -14,8 +17,22 @@
  * test loop) still never collide -- a call-order tiebreaker, never randomness.
  */
 
+import * as path from "node:path";
 import { makeId } from "../../repository-analyzer/analysis/identity";
 import type { RunSnapshot, RunSnapshotInputs } from "./types";
+
+/**
+ * Canonical, machine-independent repository identity: `repository:<slugified basename of the root>`, never
+ * the absolute path (an absolute path bakes the machine's directory layout into stored snapshots -- the
+ * exact environment-dependence this function exists to prevent). `path.win32.basename` splits on BOTH `\`
+ * and `/` (posix basename splits only on `/`), so a Windows-style and a POSIX-style path to the same
+ * repository yield the same id no matter which platform evaluates them. Exported (via ../index.ts) so every
+ * caller that needs to address a repository in a MemoryStore -- e.g. adaptive-decision's DecisionEngine
+ * `previousRun` lookup -- derives the key the same single way instead of re-slugifying a raw path.
+ */
+export function makeRepositoryId(repositoryRoot: string): string {
+  return makeId("repository", path.win32.basename(repositoryRoot));
+}
 
 let runSequence = 0;
 
@@ -35,7 +52,7 @@ export function buildRunSnapshot(inputs: RunSnapshotInputs): RunSnapshot {
   const { analysis, knowledge, reasoning, plan, graph, requestSet, planSet, validationResult, recommendationSet, reflectionReport } = inputs;
 
   return {
-    repositoryId: makeId("repository", inputs.repositoryRoot),
+    repositoryId: makeRepositoryId(inputs.repositoryRoot),
     runId: generateRunId(),
     timestamp: new Date().toISOString(),
     analysisSummary: `${analysis.projectName} -- ${analysis.fileCount} file(s) scanned.`,

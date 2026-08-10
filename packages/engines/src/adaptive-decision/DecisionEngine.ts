@@ -43,7 +43,7 @@ import { runAll as runProviderExecutionAll } from "../provider-execution/Provide
 import { validateAll } from "../validation/ValidationEngine";
 import { buildRecommendationSet } from "../recommendation/analysis/build-recommendations";
 import { buildReflectionReport } from "../reflection/analysis/build-reflection";
-import { makeId } from "../repository-analyzer/analysis/identity";
+import { makeRepositoryId } from "../memory/analysis/build-run-snapshot";
 import { MemoryStore } from "../memory/MemoryStore";
 import { buildEngineeringDecision } from "./analysis/build-decision";
 import type { DecisionInputs, EngineeringDecision } from "./analysis/types";
@@ -70,7 +70,9 @@ function defaultLoadInputs(context: RuntimeContext): DecisionInputs {
   const reflectionReport = buildReflectionReport(validationResult, recommendationSet);
 
   // See this file's own CONCRETE LIMITATION #2 -- a freshly constructed store has no prior run to find.
-  const repositoryId = makeId("repository", context.repositoryRoot);
+  // makeRepositoryId is Engineering Memory's own canonical key derivation, so this lookup always matches
+  // whatever buildRunSnapshot() recorded (never a re-slugified raw path).
+  const repositoryId = makeRepositoryId(context.repositoryRoot);
   const previousRun = new MemoryStore().latest(repositoryId);
 
   return { reflectionReport, validationResult, recommendationSet, previousRun };
