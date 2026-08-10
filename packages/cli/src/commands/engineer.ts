@@ -4,7 +4,9 @@
  * no ArtifactStore, no EventBus) and prints one operating-system-boot-sequence-style report of the whole
  * platform: Repository Analysis -> Engineering Knowledge -> Engineering Reasoning -> Engineering Planning ->
  * Engineering Missions -> Implementation Requests -> Execution Planning -> Implementation Executor ->
- * Recommendation Engine -> Reflection Engine -> Engineering Memory -> Adaptive Decision Engine.
+ * Recommendation Engine -> Reflection Engine -> Engineering Memory -> Adaptive Decision Engine -> Pull
+ * Request Engine (Capability Sprint 16 -- a deterministic PullRequestProposal, never a real PR; publication
+ * belongs to a future Runtime/Publisher layer).
  *
  * Pure orchestration only -- no engine logic is duplicated here. Two stages the boot checklist doesn't name
  * still run between Implementation Executor and Recommendation, exactly as `oram decide`/`oram history`
@@ -44,6 +46,7 @@ import {
   buildReflectionReport,
   MemoryEngine,
   buildEngineeringDecision,
+  buildPullRequestProposal,
 } from "@oram/engines";
 import { renderEngineerReport } from "../report/renderEngineerReport";
 import { printCliError } from "../errors";
@@ -106,8 +109,19 @@ export async function engineerCommand(args: string[]): Promise<number> {
   // 12: Adaptive Decision Engine -- previousRun is honestly null (see this file's header).
   const decision = buildEngineeringDecision({ reflectionReport, validationResult, recommendationSet, previousRun: null });
 
+  // 13: Pull Request Engine -- a deterministic proposal artifact only; nothing is published.
+  const proposal = buildPullRequestProposal({
+    repositoryRoot: targetPath,
+    requestSet,
+    planSet,
+    validationResult,
+    recommendationSet,
+    reflectionReport,
+    decision,
+  });
+
   const elapsedMs = Date.now() - startedAt;
 
-  console.log(renderEngineerReport({ analysis, knowledge, reasoning, plan, snapshot, decision, elapsedMs }));
+  console.log(renderEngineerReport({ analysis, knowledge, reasoning, plan, snapshot, decision, proposal, elapsedMs }));
   return 0;
 }

@@ -29,6 +29,7 @@ import { recommendCommand } from "./commands/recommend";
 import { reflectCommand } from "./commands/reflect";
 import { historyCommand } from "./commands/history";
 import { decideCommand } from "./commands/decide";
+import { pullRequestCommand } from "./commands/pull-request";
 import { engineerCommand } from "./commands/engineer";
 import { validateCommand } from "./commands/validate";
 import { inspectCommand } from "./commands/inspect";
@@ -63,6 +64,7 @@ Usage:
   oram reflect <path>        Run the full pipeline through the Reflection Engine
   oram history <path>        Run the full pipeline and record it into Engineering Memory
   oram decide <path>         Run the full pipeline through the Adaptive Decision Engine
+  oram pull-request <path>   Run the full pipeline through the Pull Request Engine (proposal only)
   oram version               Print the oram CLI version
   oram help                  Show this help message`;
 
@@ -76,7 +78,7 @@ async function versionCommand(): Promise<number> {
   return 0;
 }
 
-/** Command name -> handler. The original fixed v1 command surface (docs/ORAM_SPECIFICATION_v1.md's companion CLI table lives in ORAM_V3_MIGRATION_PLAN.md Section 6), plus `help`/`version` (Sprint 4.5), `missions` (Sprint 5), `requests` (Sprint 6), `execute-plan` (Sprint 7), a real implementation of `execute` (Sprint 8, superseding its earlier stub -- see execute.ts's own header comment), `recommend` (Sprint 11), `reflect` (Sprint 12), `history` (Sprint 13), and `decide` (Sprint 14) -- each one pipeline stage past the last. Sprints 9 (Provider Execution) and 10 (Validation) added no CLI command of their own. Sprint 15 added `engineer`, the flagship orchestration command that runs every engine end-to-end. */
+/** Command name -> handler. The original fixed v1 command surface (docs/ORAM_SPECIFICATION_v1.md's companion CLI table lives in ORAM_V3_MIGRATION_PLAN.md Section 6), plus `help`/`version` (Sprint 4.5), `missions` (Sprint 5), `requests` (Sprint 6), `execute-plan` (Sprint 7), a real implementation of `execute` (Sprint 8, superseding its earlier stub -- see execute.ts's own header comment), `recommend` (Sprint 11), `reflect` (Sprint 12), `history` (Sprint 13), and `decide` (Sprint 14) -- each one pipeline stage past the last. Sprints 9 (Provider Execution) and 10 (Validation) added no CLI command of their own. Sprint 15 added `engineer`, the flagship orchestration command that runs every engine end-to-end. Sprint 16 added `pull-request` (the Pull Request Engine -- deterministic proposal only, never a real PR). */
 export const COMMANDS: Readonly<Record<string, CommandHandler>> = {
   engineer: engineerCommand,
   init: initCommand,
@@ -91,6 +93,7 @@ export const COMMANDS: Readonly<Record<string, CommandHandler>> = {
   reflect: reflectCommand,
   history: historyCommand,
   decide: decideCommand,
+  "pull-request": pullRequestCommand,
   validate: validateCommand,
   inspect: inspectCommand,
   dashboard: dashboardCommand,
