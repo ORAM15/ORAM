@@ -71,15 +71,35 @@ artifact. Actual GitHub publication belongs to a future Runtime/Publisher layer.
 - **Direct engine API** — every stage is a pure `buildX()` function you compose by hand (this is what the
   per-stage CLI commands do). Ideal for isolated, deterministic testing; recomputes upstream stages by
   design.
-- **Runtime pipeline execution** (Capability Sprints 17–18) — `oram run .` executes the complete,
+- **Runtime pipeline execution** (Capability Sprints 17–19) — `oram run .` executes the complete,
   real thirteen-stage pipeline through `@oram/runtime`'s `Runtime.runPipeline()`: every stage is invoked by
   the real `EngineRunner`, every output is persisted in the `ArtifactStore` under the run's `runId`
   (default `<repository>/.oram`), and every downstream stage consumes the current run's artifacts through
   its `RunArtifacts` view — never recomputing upstream work (the pipeline's engines are wired so any
-  recomputation aborts the run loudly). A successful run drives the Lifecycle to `COMPLETE`; the first
-  failure transitions to `ABORTED`. Same-run identity is enforced by the `ArtifactStore`'s own addressing
-  (every artifact is keyed by `runId`), and a missing required artifact fails with a clear, deterministic
-  error. `oram handoff .` remains the focused two-engine demonstration of the handoff mechanism itself.
+  recomputation aborts the run loudly). Same-run identity is enforced by the `ArtifactStore`'s own
+  addressing (every artifact is keyed by `runId`), and a missing required artifact fails with a clear,
+  deterministic error. `oram handoff .` remains the focused two-engine demonstration of the handoff
+  mechanism itself.
+
+### A real safety gate before Provider Execution
+
+`AWAITING_APPROVAL` is a genuine boundary, not a formality: `oram run .` executes the seven pre-approval
+stages (Repository Analysis through Execution Planning) and then **stops** — Provider Execution has not
+run, and the process exits with the run still paused. Nothing continues automatically; there is no timer
+and no simulated approval. Pass `--approve` to continue the *same* run through Provider Execution to
+`COMPLETE`, or `--reject[=<reason>]` to abort straight to `ABORTED`, guaranteeing Provider Execution never
+runs for that run:
+
+```bash
+oram run .                       # stops at AWAITING_APPROVAL; prints the safety-gate report
+oram run . --approve             # runs the pre-approval stages, then explicitly approves and completes
+oram run . --reject="not ready"  # runs the pre-approval stages, then explicitly rejects -- ABORTED
+```
+
+Both flags drive the real `Runtime.approve()`/`Runtime.reject()` methods within one process/one run — a
+human types the flag deliberately, the same way a CI approval step would. Provider Execution today is
+always the deterministic in-memory `MemoryProvider` (no git, no filesystem, no shell, no LLM); the gate is
+enforced now, ahead of any real code-changing Provider, not bolted on after one exists.
 
 The pipeline is artifact-driven end to end: every arrow in the diagram above is an artifact handoff, not a
 recomputation. The final stage's `PullRequestProposal` is generated and persisted — never published.

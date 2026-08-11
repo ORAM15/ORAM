@@ -67,10 +67,14 @@ Engineering Memory, recording that run as one `RunSnapshot` into a fresh, in-pro
 Recommendation + the latest recorded Memory run into one `EngineeringDecision`)) and prints a
 presentation-ready console report -- see
 `src/report/`. None are wired to `@oram/runtime` (no Lifecycle, no ArtifactStore, no EventBus); that's
-deliberate, see each command's own header comment. `run` (Capability Sprint 18) is the exception and the
+deliberate, see each command's own header comment. `run` (Capability Sprints 18-19) is the exception and the
 primary command: it executes the full real thirteen-stage pipeline through `@oram/runtime`'s
-`Runtime.runPipeline()` -- real Lifecycle to COMPLETE, real EngineRunner, real ArtifactStore persistence
-under `<repository>/.oram` (or `--artifacts-dir`), artifact handoff between every stage. `help`/`version`
+`Runtime.runPipeline()` -- real Lifecycle, real EngineRunner, real ArtifactStore persistence under
+`<repository>/.oram` (or `--artifacts-dir`), artifact handoff between every stage. Since Sprint 19 the run
+genuinely PAUSES at `AWAITING_APPROVAL` before Provider Execution -- no auto-pass, no timer -- and only
+proceeds to COMPLETE (or aborts) when `--approve` / `--reject[=<reason>]` is passed, driving the real
+`Runtime.approve()`/`Runtime.reject()` within the same process/run; with neither flag the process exits with
+the run still paused. `help`/`version`
 (and their `--help`/`-h`/`--version`/`-v` flag aliases -- see `src/index.ts`) are real too. Every other
 command (`init`, `validate`, `inspect`, `dashboard`, `doctor`, `replay`) is still command architecture only,
 currently printing `"Not implemented yet."`. See `ORAM_V3_MIGRATION_PLAN.md` Milestone 1.

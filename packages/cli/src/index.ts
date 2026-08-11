@@ -54,7 +54,8 @@ function readVersion(): string {
 const USAGE = `oram -- Orchestrated Repository Autonomous Manager
 
 Usage:
-  oram run <path>            Execute the full pipeline through the Runtime (artifact-driven, persisted)
+  oram run <path>            Execute the full pipeline; pauses at a REAL safety gate before Provider
+                              Execution (--approve/--reject to continue or abort, see --help for details)
   oram engineer <repository> Run every ORAM engine end-to-end (the flagship command)
   oram analyze <path>        Run Repository Analysis -> Engineering Knowledge -> Engineering Reasoning
   oram plan <path>           Run the full pipeline through Engineering Planning

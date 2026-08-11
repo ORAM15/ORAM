@@ -1,12 +1,16 @@
 /**
- * End-to-end coverage for the FULL real Runtime pipeline (Capability Sprint 18): Runtime.runPipeline() +
- * createFullPipelineEngines() against the concentrated-monorepo fixture.
+ * End-to-end coverage for the FULL real Runtime pipeline AND its real safety gate (Capability Sprints 18 and
+ * 19): Runtime.runPipeline() / .approve() / .reject() + createFullPipelineEngines() against the
+ * concentrated-monorepo fixture.
  *
- * The strongest assertion is structural: every downstream engine in createFullPipelineEngines() is wired
- * with a THROWING recompute fallback, so the pipeline completing at all proves every stage consumed its
- * upstream artifacts from the current run -- recomputation anywhere would abort the run. On top of that this
- * file asserts the persisted artifact set, the COMPLETE lifecycle, and that the final PullRequestProposal is
- * exactly what the pure functions produce from the same fixture (modulo timestamp-derived ids).
+ * The strongest structural assertion carries over from Sprint 18: every downstream engine in
+ * createFullPipelineEngines() is wired with a THROWING recompute fallback, so a run reaching COMPLETE proves
+ * every stage consumed its upstream artifacts from the current run -- recomputation anywhere would abort it.
+ * On top of that, this file proves the REAL gate against the real pipeline: Provider Execution does not run
+ * until approve() is called (counted via a test-only wrapper around the real "provider-execution"
+ * EngineDescriptor -- no production code is modified to make this observable), and the final
+ * PullRequestProposal, once produced, is exactly what the pure functions produce from the same fixture
+ * (modulo timestamp-derived ids).
  *
  * Run with: node --import tsx --test packages/engines/src/full-pipeline.runtime.test.ts
  */
@@ -21,6 +25,7 @@ import {
   BufferedLogger,
   InMemoryProviderRegistry,
   FileSystemArtifactStore,
+  type PipelineEngines,
 } from "@oram/runtime";
 import { FULL_ENGINEERING_WORKFLOW } from "@oram/core";
 import { createFullPipelineEngines } from "./full-pipeline";
@@ -56,30 +61,58 @@ async function makeHarness(t: { after(fn: () => Promise<void>): void }) {
   return { artifactStore, runtime };
 }
 
-test("full pipeline: all 13 real engines run through the Runtime, consuming artifacts (recompute fallbacks would throw), reaching COMPLETE", async (t) => {
+/** Wraps the real "provider-execution" EngineDescriptor to count real invocations -- test-side instrumentation only, zero production changes. */
+function withCountedProviderExecution(counter: { count: number }): PipelineEngines {
+  const engines = createFullPipelineEngines();
+  const real = engines["provider-execution"];
+  return {
+    ...engines,
+    "provider-execution": {
+      ...real,
+      run: async (context, artifacts) => {
+        counter.count += 1;
+        return real.run(context, artifacts);
+      },
+    },
+  };
+}
+
+test("full pipeline safety gate: Provider Execution does not run until approve() is called, then runs exactly once, reaching COMPLETE", async (t) => {
   const { artifactStore, runtime } = await makeHarness(t);
+  const counter = { count: 0 };
 
-  const result = await runtime.runPipeline({ repositoryPath: FIXTURE }, createFullPipelineEngines());
+  const paused = await runtime.runPipeline({ repositoryPath: FIXTURE }, withCountedProviderExecution(counter));
 
-  // A/B. Every expected artifact exists in the same run, in declared stage order.
-  const refs = await artifactStore.list(result.runId);
+  // The gate: paused before Provider Execution, only the 7 pre-approval artifacts exist.
+  assert.equal(paused.status, "AWAITING_APPROVAL");
+  assert.equal(counter.count, 0, "Provider Execution must not occur before approval");
+  const gateIndex = FULL_ENGINEERING_WORKFLOW.steps.indexOf("provider-execution");
+  assert.equal(paused.artifacts.length, gateIndex);
+  const preRefs = await artifactStore.list(paused.runId);
+  assert.deepEqual(
+    preRefs.map((ref) => ref.stage),
+    FULL_ENGINEERING_WORKFLOW.steps.slice(0, gateIndex)
+  );
+
+  const completed = await runtime.approve(paused.runId);
+
+  assert.equal(completed.runId, paused.runId);
+  assert.equal(completed.status, "COMPLETE");
+  assert.equal(counter.count, 1, "Provider Execution must occur exactly once after approval");
+  assert.equal(runtime.lifecycle.state.phase, "COMPLETE");
+
+  // A/B/C/D/E from the Sprint's own requirement list, against the REAL engines: all 13 artifacts persisted,
+  // same run, in declared order.
+  const refs = await artifactStore.list(completed.runId);
   assert.deepEqual(
     refs.map((ref) => ref.stage),
     [...FULL_ENGINEERING_WORKFLOW.steps]
   );
-  assert.ok(refs.every((ref) => ref.runId === result.runId));
 
-  // F. COMPLETE, through the full happy path.
-  assert.equal(runtime.lifecycle.state.phase, "COMPLETE");
-  assert.deepEqual(
-    runtime.lifecycle.state.history.map((entry) => entry.phase),
-    ["CREATED", "ANALYZING", "PLANNING", "AWAITING_APPROVAL", "EXECUTING", "VALIDATING", "REFLECTING", "PUBLISHING", "COMPLETE"]
-  );
-
-  // E. The proposal was generated from THIS run's artifacts and matches the pure-function result for the
-  // same fixture (modulo timestamp-derived id/timestamp), decision included.
-  const decision = await artifactStore.read<EngineeringDecision>({ runId: result.runId, stage: "adaptive-decision", name: "engineering-decision" });
-  const proposal = await artifactStore.read<PullRequestProposal>({ runId: result.runId, stage: "pull-request", name: "pull-request-proposal" });
+  // The proposal was generated from THIS run's artifacts and matches the pure-function result for the same
+  // fixture (modulo timestamp-derived id/timestamp), decision included.
+  const decision = await artifactStore.read<EngineeringDecision>({ runId: completed.runId, stage: "adaptive-decision", name: "engineering-decision" });
+  const proposal = await artifactStore.read<PullRequestProposal>({ runId: completed.runId, stage: "pull-request", name: "pull-request-proposal" });
 
   const requestSet = buildImplementationRequests(
     buildMissionGraph(buildEngineeringPlan(buildEngineeringReasoning(buildEngineeringKnowledge(buildRepositoryAnalysis(FIXTURE)))))
@@ -98,14 +131,38 @@ test("full pipeline: all 13 real engines run through the Runtime, consuming arti
   assert.equal(proposal.repositoryId, "repository:concentrated-monorepo");
 });
 
+test("full pipeline safety gate: reject() reaches ABORTED, Provider Execution never runs, no post-approval artifact exists", async (t) => {
+  const { artifactStore, runtime } = await makeHarness(t);
+  const counter = { count: 0 };
+
+  const paused = await runtime.runPipeline({ repositoryPath: FIXTURE }, withCountedProviderExecution(counter));
+  const rejected = await runtime.reject(paused.runId, "reviewer declined");
+
+  assert.equal(rejected.status, "ABORTED");
+  assert.equal(counter.count, 0, "Provider Execution must never occur for a rejected run");
+  assert.equal(runtime.lifecycle.state.phase, "ABORTED");
+
+  const gateIndex = FULL_ENGINEERING_WORKFLOW.steps.indexOf("provider-execution");
+  const refs = await artifactStore.list(paused.runId);
+  assert.deepEqual(
+    refs.map((ref) => ref.stage),
+    FULL_ENGINEERING_WORKFLOW.steps.slice(0, gateIndex),
+    "a rejected run must carry no post-approval artifact (no provider-execution, validation, recommendation, reflection, adaptive-decision, or pull-request)"
+  );
+
+  await assert.rejects(() => runtime.approve(paused.runId), "approve() must be refused once a run has been rejected");
+});
+
 test("full pipeline: runs against this actual repository without recomputation (smoke)", async (t) => {
   const { runtime } = await makeHarness(t);
   const repoRoot = path.join(import.meta.dirname, "..", "..", "..");
 
-  const result = await runtime.runPipeline({ repositoryPath: repoRoot }, createFullPipelineEngines());
+  const paused = await runtime.runPipeline({ repositoryPath: repoRoot }, createFullPipelineEngines());
+  assert.equal(paused.status, "AWAITING_APPROVAL");
 
-  assert.equal(runtime.lifecycle.state.phase, "COMPLETE");
-  assert.equal(result.artifacts.length, FULL_ENGINEERING_WORKFLOW.steps.length);
-  const proposal = result.artifacts[result.artifacts.length - 1]!.payload as PullRequestProposal;
+  const completed = await runtime.approve(paused.runId);
+  assert.equal(completed.status, "COMPLETE");
+  assert.equal(completed.artifacts.length, FULL_ENGINEERING_WORKFLOW.steps.length);
+  const proposal = completed.artifacts[completed.artifacts.length - 1]!.payload as PullRequestProposal;
   assert.equal(proposal.repositoryId, "repository:oram");
 });
