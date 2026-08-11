@@ -28,7 +28,22 @@ Owns exactly five things, and nothing else:
 
 ## Status
 
-**Capability Sprint 17 (current) — Runtime Artifact Handoff:** `EngineRunner.run()` now passes every engine
+**Capability Sprint 18 (current) — Full Runtime Pipeline:** `Runtime.runPipeline()` executes the complete,
+REAL thirteen-stage engineering pipeline (`@oram/core`'s declarative `FULL_ENGINEERING_WORKFLOW`:
+repository-intelligence → … → pull-request) end to end through the same `EngineRunner` `start()` uses.
+Every stage's output is persisted in the `ArtifactStore` under the run's `runId`, every downstream stage
+consumes the current run's artifacts via `RunArtifacts` (the caller-supplied engines from `@oram/engines`'
+`createFullPipelineEngines()` wire THROWING recompute fallbacks, so a completed run is itself proof of
+handoff), and the Lifecycle walks its full happy path `CREATED → ANALYZING → PLANNING → AWAITING_APPROVAL →
+EXECUTING → VALIDATING → REFLECTING → PUBLISHING → COMPLETE`; the first stage failure transitions to
+`ABORTED` and rethrows. The AWAITING_APPROVAL gate is auto-passed *and logged* because Provider Execution is
+the deterministic in-memory MemoryProvider (no side effects to gate) — a real code-changing Provider
+requires the real `approve()` flow (the future Safety Gate). The final stage produces a
+`PullRequestProposal` artifact — generated, never published; no GitHub API exists anywhere in this package.
+`start()`'s four-step placeholder workflow is unchanged (its frozen tests keep passing), and `oram run
+<path>` is the CLI entry point for the real pipeline.
+
+**Capability Sprint 17 — Runtime Artifact Handoff:** `EngineRunner.run()` now passes every engine
 a second, optional argument: `RunArtifacts` (`src/RunArtifacts.ts`), a read-only, run-scoped view of the
 current run's already-persisted artifacts (`has()` / `require()` / `missing()`), backed directly by the
 existing `ArtifactStore` — not a second storage abstraction. This closes the long-disclosed "an engine
@@ -61,6 +76,8 @@ See `ORAM_V3_MIGRATION_PLAN.md` Milestone 2 and Milestone 3.
 
 ## Relationship to the existing pipeline
 
-This package does not yet call, wrap, or replace `scripts/autonomous-orchestrator.js`. That script remains
-the only functional orchestrator — this package proves out the *shape* a future replacement will have,
-using placeholder data, not real repository analysis. Real engine logic is only ever extracted in Phase 3.
+As of Capability Sprint 18, this package IS a functional orchestrator: `Runtime.runPipeline()` executes the
+full real engineering pipeline (see the Status section above), and `oram run <path>` drives it. The
+placeholder-engine `start()` path and its frozen Phase 2/4 behavior remain intact alongside it.
+`scripts/autonomous-orchestrator.js` (System A) still exists as working reference material and prior art —
+see `docs/history/origin.md` — but is no longer the only functional orchestrator.

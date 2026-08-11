@@ -10,6 +10,7 @@
     "oram": "./dist/bin.js"
   },
   "dependencies": {
+    "@oram/core": "*",
     "@oram/runtime": "*",
     "@oram/engines": "*"
   },

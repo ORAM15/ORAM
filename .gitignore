@@ -50,3 +50,6 @@ npm-debug.log
 # Autonomous Engineering Orchestrator v1 generated output (timestamped on every run; regenerate with
 # `node scripts/autonomous-orchestrator.js`)
 /run/
+
+# ORAM Runtime run-scoped artifacts (RuntimeBuilder repository-local default; every `oram run` writes here)
+.oram/

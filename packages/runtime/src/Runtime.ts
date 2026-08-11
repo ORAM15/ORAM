@@ -90,15 +90,16 @@
 
 import type { EventBus } from "./EventBus";
 import type { Lifecycle, LifecyclePhase } from "./Lifecycle";
-import { RunLifecycle } from "./Lifecycle";
+import { RunLifecycle, LIFECYCLE_TRANSITIONS } from "./Lifecycle";
 import type { ArtifactStore } from "./ArtifactStore";
 import type { ProviderRegistry } from "./ProviderRegistry";
 import type { Logger } from "./Logger";
 import { createRuntimeContext } from "./RuntimeContext";
 import { EngineRunner, type EngineDescriptor } from "./EngineRunner";
-import { ENGINEERING_WORKFLOW, type StepId } from "@oram/core";
+import { ENGINEERING_WORKFLOW, FULL_ENGINEERING_WORKFLOW, type StepId, type PipelineStepId } from "@oram/core";
 import { Run } from "./run/run";
 import type { RunContext } from "./run/run-context";
+import type { Artifact } from "./artifacts/artifact";
 
 export interface RuntimeDependencies {
   readonly eventBus: EventBus;
@@ -121,6 +122,22 @@ export interface RunHandle {
 }
 
 /**
+ * One EngineDescriptor per FULL_ENGINEERING_WORKFLOW step (Capability Sprint 18) -- supplied BY THE CALLER,
+ * exactly like PhaseEngineOverrides: Runtime interprets the declarative workflow and owns orchestration, but
+ * never imports @oram/engines itself (the same System Layers/Dependency Inversion rationale the module-level
+ * PHASE 3 STATUS note documents). @oram/engines' createFullPipelineEngines() is the canonical producer of
+ * this value. The Record is exhaustive on purpose: a full-pipeline run with a missing stage is a
+ * composition-time type error, never a silent runtime skip.
+ */
+export type PipelineEngines = Readonly<Record<PipelineStepId, EngineDescriptor<unknown>>>;
+
+/** What runPipeline() resolves with: the run's identity and each stage's returned Artifact wrapper, in execution order. The raw payloads are also all persisted in the ArtifactStore under this runId. */
+export interface PipelineRunResult {
+  readonly runId: string;
+  readonly artifacts: ReadonlyArray<Artifact<unknown>>;
+}
+
+/**
  * The Runtime's public contract. One instance is expected to be constructed per `oram` process invocation,
  * wired up by @oram/cli using whatever RuntimeDependencies are appropriate for that command (e.g.
  * `oram doctor` needs no ProviderRegistry at all; `oram run` needs every dependency).
@@ -130,6 +147,15 @@ export interface Runtime {
 
   /** Starts a new Engineering Cycle against RuntimeOptions.repositoryPath, running Observe through Plan automatically and then pausing at AWAITING_APPROVAL. */
   start(options: RuntimeOptions): Promise<RunHandle>;
+
+  /**
+   * Capability Sprint 18: executes the FULL real engineering pipeline (FULL_ENGINEERING_WORKFLOW's thirteen
+   * stages) end to end through EngineRunner, driving the Lifecycle to COMPLETE on success or ABORTED on the
+   * first stage failure. Every stage's output is persisted in the ArtifactStore under this run's runId, and
+   * downstream stages consume those artifacts via RunArtifacts -- see runPipeline()'s own doc comment on
+   * OramRuntime for the per-stage Lifecycle mapping and the AWAITING_APPROVAL gate note.
+   */
+  runPipeline(options: RuntimeOptions, engines: PipelineEngines): Promise<PipelineRunResult>;
 
   /** Approves a run currently in AWAITING_APPROVAL, allowing it to proceed to EXECUTING. The sole path by which a human authorizes a Provider to actually change code -- see docs/ORAM_SPECIFICATION_v1.md Section 1.3, Core Philosophy. */
   approve(runId: string): Promise<void>;
@@ -289,6 +315,31 @@ const PLACEHOLDER_ENGINES: Readonly<Record<StepId, () => EngineDescriptor<unknow
 };
 
 /**
+ * Which Lifecycle phase each FULL_ENGINEERING_WORKFLOW stage belongs to (Capability Sprint 18) -- Runtime's
+ * own interpretation of @oram/core's declarative workflow, exactly like STEP_LIFECYCLE_PHASE above it, using
+ * the same phase semantics Lifecycle.ts's ENGINE MAPPING comment already documents: analysis/knowledge/
+ * reasoning are ANALYZING; planning through execution-planning are PLANNING; provider-execution is EXECUTING;
+ * validation is VALIDATING; recommendation/reflection/adaptive-decision all reason over completed validation
+ * output, hence REFLECTING; and pull-request (the proposal artifact -- generated, never published) is
+ * PUBLISHING's only occupant until a real Publisher exists.
+ */
+const PIPELINE_STEP_LIFECYCLE_PHASE: Readonly<Record<PipelineStepId, LifecyclePhase>> = {
+  "repository-intelligence": "ANALYZING",
+  "engineering-knowledge": "ANALYZING",
+  "engineering-reasoning": "ANALYZING",
+  "engineering-planning": "PLANNING",
+  "engineering-missions": "PLANNING",
+  "implementation-requests": "PLANNING",
+  "execution-planning": "PLANNING",
+  "provider-execution": "EXECUTING",
+  validation: "VALIDATING",
+  recommendation: "REFLECTING",
+  reflection: "REFLECTING",
+  "adaptive-decision": "REFLECTING",
+  "pull-request": "PUBLISHING",
+};
+
+/**
  * Reference implementation (Phase 2). See the module-level PHASE 2 STATUS note above for exactly what is
  * and is not implemented. Every run's Lifecycle is retained in-memory (see the `lifecycles` map) so
  * abort()/the `lifecycle` getter can address any run this instance has started, even though the public
@@ -369,6 +420,85 @@ export class OramRuntime implements Runtime {
         );
       },
     };
+  }
+
+  /**
+   * Capability Sprint 18 -- the full real pipeline. Walks FULL_ENGINEERING_WORKFLOW.steps in declared order:
+   * for each stage, advances the Lifecycle along its happy path to that stage's phase
+   * (PIPELINE_STEP_LIFECYCLE_PHASE), then invokes the caller-supplied EngineDescriptor through the same
+   * EngineRunner start() uses -- so every stage is persisted, event-published, and handed the RunArtifacts
+   * view exactly like every other engine invocation. On success the Lifecycle is advanced to COMPLETE and the
+   * Run marked finished; the first stage failure transitions to ABORTED, marks the Run failed, and rethrows.
+   *
+   * AWAITING_APPROVAL NOTE (disclosed, not hidden): the happy path passes through the human-approval gate on
+   * the way to EXECUTING. This method logs and auto-passes it, because the only Provider Execution that
+   * exists today is the deterministic in-memory MemoryProvider -- it generates prompt/patch artifacts and
+   * touches neither git, nor the filesystem, nor any shell command, so there is no side effect for a human to
+   * gate. The moment a real code-changing Provider exists, this auto-pass must be replaced by the real
+   * approve() flow -- that is precisely the future Safety Gate's job, and this note is the marker for it.
+   */
+  async runPipeline(options: RuntimeOptions, engines: PipelineEngines): Promise<PipelineRunResult> {
+    const runId = generateRunId();
+    const runLifecycle = RunLifecycle.create(runId);
+    this.lifecycles.set(runId, runLifecycle);
+    this.mostRecentRunId = runId;
+
+    const runContext: RunContext = { repositoryRoot: options.repositoryPath, workflowId: FULL_ENGINEERING_WORKFLOW.id };
+    const run = new Run(runId, runContext);
+    run.start();
+    this.runs.set(runId, run);
+
+    const context = createRuntimeContext({
+      repositoryRoot: options.repositoryPath,
+      config: options.config,
+      logger: this.deps.logger,
+      eventBus: this.deps.eventBus,
+      artifactStore: this.deps.artifactStore,
+      providerRegistry: this.deps.providerRegistry,
+    });
+    const engineRunner = new EngineRunner(context);
+
+    // Walks the Lifecycle's happy path (each phase's first successor) until `target` is reached -- the
+    // pipeline's phases are a strict subsequence of the happy path, so this can never wander. Passing
+    // through AWAITING_APPROVAL is logged explicitly (see this method's own gate note above).
+    const advanceTo = (target: LifecyclePhase): void => {
+      while (runLifecycle.state.phase !== target) {
+        const next = LIFECYCLE_TRANSITIONS[runLifecycle.state.phase][0];
+        if (!next) {
+          throw new Error(`Cannot advance run "${runId}" from terminal phase "${runLifecycle.state.phase}" to "${target}".`);
+        }
+        if (next === "AWAITING_APPROVAL" && target !== "AWAITING_APPROVAL") {
+          this.deps.logger.info(
+            null,
+            `Run "${runId}": auto-passing AWAITING_APPROVAL -- execution is the deterministic in-memory MemoryProvider (no side effects to gate). A real code-changing Provider requires the real approve() flow.`
+          );
+        }
+        runLifecycle.transition(next);
+      }
+    };
+
+    this.deps.logger.info(null, `Starting full Engineering Pipeline "${runId}" for repository "${options.repositoryPath}".`);
+
+    const artifacts: Artifact<unknown>[] = [];
+    try {
+      for (const step of FULL_ENGINEERING_WORKFLOW.steps) {
+        advanceTo(PIPELINE_STEP_LIFECYCLE_PHASE[step]);
+        const artifact = await engineRunner.run(runId, engines[step]);
+        run.addArtifact(artifact);
+        artifacts.push(artifact);
+      }
+      advanceTo("COMPLETE");
+      run.finish();
+    } catch (error) {
+      runLifecycle.transition("ABORTED");
+      run.fail();
+      const message = error instanceof Error ? error.message : String(error);
+      this.deps.logger.error(null, `Full Engineering Pipeline "${runId}" aborted: ${message}`);
+      throw error;
+    }
+
+    this.deps.logger.info(null, `Full Engineering Pipeline "${runId}" is COMPLETE: ${artifacts.length} artifact(s) persisted.`);
+    return { runId, artifacts };
   }
 
   async approve(runId: string): Promise<void> {

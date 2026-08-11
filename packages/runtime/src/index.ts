@@ -5,7 +5,7 @@
  * files directly, so this barrel remains the one place the package's public surface is defined.
  */
 
-export type { Runtime, RuntimeDependencies, RuntimeOptions, RunHandle, PhaseEngineOverrides } from "./Runtime";
+export type { Runtime, RuntimeDependencies, RuntimeOptions, RunHandle, PhaseEngineOverrides, PipelineEngines, PipelineRunResult } from "./Runtime";
 export { OramRuntime } from "./Runtime";
 
 export type { Lifecycle, LifecyclePhase, LifecyclePhaseRecord, LifecycleState } from "./Lifecycle";

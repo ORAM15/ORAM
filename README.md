@@ -71,16 +71,18 @@ artifact. Actual GitHub publication belongs to a future Runtime/Publisher layer.
 - **Direct engine API** — every stage is a pure `buildX()` function you compose by hand (this is what the
   per-stage CLI commands do). Ideal for isolated, deterministic testing; recomputes upstream stages by
   design.
-- **Runtime pipeline execution** (Capability Sprint 17) — engines invoked through `@oram/runtime`'s
-  `EngineRunner` receive a run-scoped `RunArtifacts` view and consume artifacts already persisted by
-  earlier stages of the same run instead of recomputing them. Same-run identity is enforced by the
-  `ArtifactStore`'s own addressing (every artifact is keyed by `runId`), and a missing required artifact
-  fails with a clear, deterministic error. Run `oram handoff .` to see this working: it persists every
-  upstream artifact once, then drives the Adaptive Decision and Pull Request Engines through the real
-  `EngineRunner` with their recompute fallbacks forbidden.
+- **Runtime pipeline execution** (Capability Sprints 17–18) — `oram run .` executes the complete,
+  real thirteen-stage pipeline through `@oram/runtime`'s `Runtime.runPipeline()`: every stage is invoked by
+  the real `EngineRunner`, every output is persisted in the `ArtifactStore` under the run's `runId`
+  (default `<repository>/.oram`), and every downstream stage consumes the current run's artifacts through
+  its `RunArtifacts` view — never recomputing upstream work (the pipeline's engines are wired so any
+  recomputation aborts the run loudly). A successful run drives the Lifecycle to `COMPLETE`; the first
+  failure transitions to `ABORTED`. Same-run identity is enforced by the `ArtifactStore`'s own addressing
+  (every artifact is keyed by `runId`), and a missing required artifact fails with a clear, deterministic
+  error. `oram handoff .` remains the focused two-engine demonstration of the handoff mechanism itself.
 
-ORAM is moving toward a fully artifact-driven execution pipeline: every arrow in the diagram above should
-increasingly represent an artifact handoff rather than a recomputation.
+The pipeline is artifact-driven end to end: every arrow in the diagram above is an artifact handoff, not a
+recomputation. The final stage's `PullRequestProposal` is generated and persisted — never published.
 
 ## Two implementations, one lineage
 

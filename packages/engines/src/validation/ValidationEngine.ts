@@ -25,7 +25,7 @@
  *      future PR.
  */
 
-import type { EngineDescriptor, ArtifactRef, RuntimeContext } from "@oram/runtime";
+import type { EngineDescriptor, ArtifactRef, RuntimeContext, RunArtifacts } from "@oram/runtime";
 import type { OramEvent } from "@oram/events";
 import { buildRepositoryAnalysis } from "../repository-analyzer/analysis/build-analysis";
 import { buildEngineeringKnowledge } from "../engineering-knowledge/analysis/build-knowledge";
@@ -35,7 +35,7 @@ import { buildMissionGraph } from "../engineering-missions/analysis/build-missio
 import { buildImplementationRequests } from "../implementation-requests/analysis/build-implementation-requests";
 import { buildExecutionPlans } from "../execution-planning/analysis/build-execution-plans";
 import { runAll as runProviderExecutionAll } from "../provider-execution/ProviderExecutionEngine";
-import type { PatchArtifact } from "../provider-execution/analysis/types";
+import type { PatchArtifact, ProviderExecutionResult } from "../provider-execution/analysis/types";
 import { buildValidationReport } from "./analysis/build-validation-report";
 import type { ValidationReport, ValidationResult } from "./analysis/types";
 
@@ -64,8 +64,15 @@ export function createValidationEngine(loadPatches: (context: RuntimeContext) =>
   return {
     stage: "validation",
     artifactName: "validation",
-    run(context: RuntimeContext): ValidationResult {
-      const patches = loadPatches(context);
+    // Sprint 18: consumes the current run's persisted provider-execution artifact when available (the
+    // patches are extracted from it exactly as defaultLoadPatches extracts them from a fresh run); falls
+    // back to the injected/default loader otherwise (Sprint 17's artifact-first contract).
+    async run(context: RuntimeContext, artifacts?: RunArtifacts): Promise<ValidationResult> {
+      const fromRun =
+        artifacts && (await artifacts.has("provider-execution", "provider-execution"))
+          ? await artifacts.require<ProviderExecutionResult[]>("provider-execution", "provider-execution")
+          : null;
+      const patches = fromRun ? fromRun.flatMap((result) => result.steps.map((step) => step.patch)) : loadPatches(context);
       return validateAll(patches);
     },
     buildEvent(runId: string, output: ValidationResult, _ref: ArtifactRef): OramEvent {

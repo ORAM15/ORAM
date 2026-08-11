@@ -26,7 +26,7 @@
  *   `loadRepositoryAnalysis` parameter below.
  */
 
-import type { EngineDescriptor, ArtifactRef, RuntimeContext } from "@oram/runtime";
+import type { EngineDescriptor, ArtifactRef, RuntimeContext, RunArtifacts } from "@oram/runtime";
 import type { OramEvent } from "@oram/events";
 import { buildRepositoryAnalysis } from "../repository-analyzer/analysis/build-analysis";
 import type { RepositoryAnalysis } from "../repository-analyzer/analysis/types";
@@ -39,8 +39,15 @@ export function createEngineeringKnowledgeEngine(
   return {
     stage: "engineering-knowledge",
     artifactName: "engineering-knowledge",
-    run(context: RuntimeContext): EngineeringKnowledge {
-      const analysis = loadRepositoryAnalysis(context);
+    // Sprint 18: consumes the current run's persisted repository-analysis artifact when available (see
+    // @oram/runtime's RunArtifacts); falls back to the injected/default loader otherwise -- the same
+    // artifact-first contract adaptive-decision and pull-request established in Sprint 17.
+    async run(context: RuntimeContext, artifacts?: RunArtifacts): Promise<EngineeringKnowledge> {
+      const fromRun =
+        artifacts && (await artifacts.has("repository-intelligence", "repository-analysis"))
+          ? await artifacts.require<RepositoryAnalysis>("repository-intelligence", "repository-analysis")
+          : null;
+      const analysis = fromRun ?? loadRepositoryAnalysis(context);
       return buildEngineeringKnowledge(analysis);
     },
     buildEvent(runId: string, output: EngineeringKnowledge, _ref: ArtifactRef): OramEvent {

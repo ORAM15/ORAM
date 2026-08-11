@@ -278,7 +278,18 @@ multiple repositories, statistics, a stored JSON snapshot, deterministic ids, a 
 plus the CLI's own `renderHistoryReport.test.ts` for coverage. No Runtime changes, no EngineRunner changes, no
 modifications to any protected package (Repository Analysis through Reflection) -- only additive CLI files.
 
-**Capability Sprint 17 (current) — Runtime Artifact Handoff:** the Adaptive Decision Engine and the Pull
+**Capability Sprint 18 (current) — Full Runtime Pipeline:** every remaining engine wrapper's
+`EngineDescriptor` path (engineering-knowledge through recommendation, plus reflection's two-input case) now
+consumes its declared upstream artifact(s) from the current run via `RunArtifacts`, exactly like
+adaptive-decision/pull-request did since Sprint 17 -- artifact-first, with the pre-existing documented
+recompute fallback only when no run artifacts exist, and (for reflection's multi-input case) a loud failure
+on a partial run. New `createFullPipelineEngines()` (`src/full-pipeline.ts`) is the canonical composition of
+one engine per `FULL_ENGINEERING_WORKFLOW` stage for `@oram/runtime`'s `Runtime.runPipeline()` -- every
+downstream engine wired with a THROWING recompute fallback, so a completed pipeline run is itself the proof
+that handoff worked. Direct `buildX()` APIs, per-stage CLI commands, decision semantics, and all existing
+snapshots unchanged. See `full-pipeline.runtime.test.ts`.
+
+**Capability Sprint 17 — Runtime Artifact Handoff:** the Adaptive Decision Engine and the Pull
 Request Engine's `EngineDescriptor` paths now consume the current run's persisted artifacts instead of
 recomputing the pipeline, via `@oram/runtime`'s new `RunArtifacts` argument to `run()`. Each engine declares
 its upstream dependencies explicitly (`DECISION_UPSTREAM_ARTIFACTS`: validation, recommendation, reflection;

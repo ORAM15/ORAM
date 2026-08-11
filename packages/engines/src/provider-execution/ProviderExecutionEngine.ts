@@ -24,7 +24,7 @@
  *      left for a future PR.
  */
 
-import type { EngineDescriptor, ArtifactRef, RuntimeContext } from "@oram/runtime";
+import type { EngineDescriptor, ArtifactRef, RuntimeContext, RunArtifacts } from "@oram/runtime";
 import type { OramEvent } from "@oram/events";
 import { buildRepositoryAnalysis } from "../repository-analyzer/analysis/build-analysis";
 import { buildEngineeringKnowledge } from "../engineering-knowledge/analysis/build-knowledge";
@@ -76,8 +76,15 @@ export function createProviderExecutionEngine(
   return {
     stage: "provider-execution",
     artifactName: "provider-execution",
-    run(context: RuntimeContext): ProviderExecutionResult[] {
-      const planSet = loadExecutionPlans(context);
+    // Sprint 18: consumes the current run's persisted execution-planning artifact when available; falls
+    // back to the injected/default loader otherwise (Sprint 17's artifact-first contract). Execution itself
+    // is unchanged: the existing Provider abstraction with the deterministic MemoryProvider default.
+    async run(context: RuntimeContext, artifacts?: RunArtifacts): Promise<ProviderExecutionResult[]> {
+      const fromRun =
+        artifacts && (await artifacts.has("execution-planning", "execution-planning"))
+          ? await artifacts.require<ExecutionPlanSet>("execution-planning", "execution-planning")
+          : null;
+      const planSet = fromRun ?? loadExecutionPlans(context);
       return runAll(planSet);
     },
     buildEvent(runId: string, output: ProviderExecutionResult[], _ref: ArtifactRef): OramEvent {

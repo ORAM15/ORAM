@@ -9,3 +9,27 @@
  * this change (see this PR's own deliverables notes).
  */
 export type StepId = "observe" | "understand" | "reason" | "plan";
+
+/**
+ * PipelineStepId — the identifier for one stage of the FULL real engineering pipeline (Capability Sprint
+ * 18). A separate union from StepId on purpose: StepId names the four coarse Phase-2 workflow steps (still
+ * used, unchanged, by Runtime.start()'s placeholder workflow and its frozen tests); PipelineStepId names the
+ * thirteen real engine stages, using each engine's own existing `EngineDescriptor.stage` string verbatim --
+ * no new vocabulary, a PipelineStepId IS the stage it addresses. Extending StepId instead would have forced
+ * every existing exhaustive Record<StepId, ...> in Runtime.ts to grow placeholder entries for stages that
+ * have no placeholder, which is exactly the kind of fabrication this codebase avoids.
+ */
+export type PipelineStepId =
+  | "repository-intelligence"
+  | "engineering-knowledge"
+  | "engineering-reasoning"
+  | "engineering-planning"
+  | "engineering-missions"
+  | "implementation-requests"
+  | "execution-planning"
+  | "provider-execution"
+  | "validation"
+  | "recommendation"
+  | "reflection"
+  | "adaptive-decision"
+  | "pull-request";

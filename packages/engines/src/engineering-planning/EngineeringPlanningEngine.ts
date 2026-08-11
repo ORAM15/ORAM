@@ -22,7 +22,7 @@
  *      dedicated MissionsGeneratedEvent is the correct long-term fix, left for a future PR.
  */
 
-import type { EngineDescriptor, ArtifactRef, RuntimeContext } from "@oram/runtime";
+import type { EngineDescriptor, ArtifactRef, RuntimeContext, RunArtifacts } from "@oram/runtime";
 import type { OramEvent } from "@oram/events";
 import { buildRepositoryAnalysis } from "../repository-analyzer/analysis/build-analysis";
 import { buildEngineeringKnowledge } from "../engineering-knowledge/analysis/build-knowledge";
@@ -38,8 +38,14 @@ export function createEngineeringPlanningEngine(
   return {
     stage: "engineering-planning",
     artifactName: "engineering-planning",
-    run(context: RuntimeContext): EngineeringPlan {
-      const reasoning = loadEngineeringReasoning(context);
+    // Sprint 18: consumes the current run's persisted engineering-reasoning artifact when available;
+    // falls back to the injected/default loader otherwise (Sprint 17's artifact-first contract).
+    async run(context: RuntimeContext, artifacts?: RunArtifacts): Promise<EngineeringPlan> {
+      const fromRun =
+        artifacts && (await artifacts.has("engineering-reasoning", "engineering-reasoning"))
+          ? await artifacts.require<EngineeringReasoning>("engineering-reasoning", "engineering-reasoning")
+          : null;
+      const reasoning = fromRun ?? loadEngineeringReasoning(context);
       return buildEngineeringPlan(reasoning);
     },
     buildEvent(runId: string, output: EngineeringPlan, _ref: ArtifactRef): OramEvent {
