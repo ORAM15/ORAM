@@ -28,20 +28,35 @@ Owns exactly five things, and nothing else:
 
 ## Status
 
-**Capability Sprint 18 (current) — Full Runtime Pipeline:** `Runtime.runPipeline()` executes the complete,
+**Capability Sprint 19 (current) — Real Runtime Safety Gate:** `AWAITING_APPROVAL` is now a genuine
+boundary, not an auto-passed formality. `Runtime.runPipeline()` executes only the pre-approval half of the
+pipeline (repository-intelligence through execution-planning), advances the Lifecycle to
+`AWAITING_APPROVAL`, and **returns** — Provider Execution has not been invoked, and nothing further happens
+until an explicit decision is made. `Runtime.approve(runId)` resumes that EXACT run (same `runId`, same
+`RuntimeContext`/`EngineRunner`/`ArtifactStore`, same `PipelineEngines`) from `provider-execution` through
+`pull-request`, reaching `COMPLETE` on success or `ABORTED` on a post-approval failure.
+`Runtime.reject(runId, reason?)` transitions straight from `AWAITING_APPROVAL` to `ABORTED` and guarantees
+Provider Execution never runs for that run. `Runtime.status(runId)` reads back the Lifecycle phase for any
+run this instance has touched. Both `approve()`/`reject()` claim their pending run with a synchronous
+`Map.get()` + `Map.delete()` (no `await` between them), so concurrent or duplicate calls for the same
+`runId` can never execute Provider Execution more than once — the second caller always finds the run already
+claimed and fails loudly instead. There is no timer, no simulated approval, and no fallback that silently
+continues without an explicit call.
+
+**Capability Sprint 18 — Full Runtime Pipeline:** `Runtime.runPipeline()` executes the complete,
 REAL thirteen-stage engineering pipeline (`@oram/core`'s declarative `FULL_ENGINEERING_WORKFLOW`:
-repository-intelligence → … → pull-request) end to end through the same `EngineRunner` `start()` uses.
-Every stage's output is persisted in the `ArtifactStore` under the run's `runId`, every downstream stage
-consumes the current run's artifacts via `RunArtifacts` (the caller-supplied engines from `@oram/engines`'
+repository-intelligence → … → pull-request) through the same `EngineRunner` `start()` uses. Every stage's
+output is persisted in the `ArtifactStore` under the run's `runId`, every downstream stage consumes the
+current run's artifacts via `RunArtifacts` (the caller-supplied engines from `@oram/engines`'
 `createFullPipelineEngines()` wire THROWING recompute fallbacks, so a completed run is itself proof of
-handoff), and the Lifecycle walks its full happy path `CREATED → ANALYZING → PLANNING → AWAITING_APPROVAL →
-EXECUTING → VALIDATING → REFLECTING → PUBLISHING → COMPLETE`; the first stage failure transitions to
-`ABORTED` and rethrows. The AWAITING_APPROVAL gate is auto-passed *and logged* because Provider Execution is
-the deterministic in-memory MemoryProvider (no side effects to gate) — a real code-changing Provider
-requires the real `approve()` flow (the future Safety Gate). The final stage produces a
-`PullRequestProposal` artifact — generated, never published; no GitHub API exists anywhere in this package.
-`start()`'s four-step placeholder workflow is unchanged (its frozen tests keep passing), and `oram run
-<path>` is the CLI entry point for the real pipeline.
+handoff). The final stage produces a `PullRequestProposal` artifact — generated, never published; no GitHub
+API exists anywhere in this package. `start()`'s four-step placeholder workflow is unchanged (its frozen
+tests keep passing, including reaching its own `AWAITING_APPROVAL`, which is unrelated to the real pipeline
+safety gate above), and `oram run <path>` is the CLI entry point for the real pipeline.
+
+Provider Execution today is always the deterministic in-memory `MemoryProvider` — no git, no filesystem, no
+shell, no LLM. The safety gate exists in anticipation of a real, code-changing Provider; it is enforced now,
+before one exists, rather than bolted on afterward.
 
 **Capability Sprint 17 — Runtime Artifact Handoff:** `EngineRunner.run()` now passes every engine
 a second, optional argument: `RunArtifacts` (`src/RunArtifacts.ts`), a read-only, run-scoped view of the

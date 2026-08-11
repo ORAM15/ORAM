@@ -86,6 +86,20 @@
  * TODO(runtime): decide how `approve()` is actually delivered from a human -- a CLI prompt (packages/cli),
  *   a dashboard click (apps/dashboard), and a CI approval step (a future GitHub Action) all need to resolve
  *   to this same method.
+ *
+ * CAPABILITY SPRINT 19 STATUS -- Real Runtime Safety Gate: runPipeline() no longer auto-passes
+ *   AWAITING_APPROVAL. It now executes ONLY the pre-EXECUTING stages (repository-intelligence through
+ *   execution-planning), transitions to AWAITING_APPROVAL, records a PendingPipelineRun (below), and
+ *   RETURNS -- Provider Execution has not been invoked and nothing further happens until an explicit
+ *   approve(runId) or reject(runId, reason?) call. approve() resumes the SAME run (same runId, same
+ *   RuntimeContext/EngineRunner/ArtifactStore, same PipelineEngines) from provider-execution through
+ *   pull-request; reject() transitions straight to ABORTED and guarantees Provider Execution never runs.
+ *   Both consume their PendingPipelineRun record synchronously (get + delete, no `await` between them) before
+ *   doing any async work, so two concurrent calls for the same runId can never both proceed -- the second
+ *   always finds the record already gone and rejects immediately (see approve()'s own CONCURRENCY comment).
+ *   `status(runId)` is a thin, additive read of the same per-run Lifecycle this class already tracked
+ *   privately (via the `lifecycles` map) but never exposed by runId before Sprint 19 -- the public `lifecycle`
+ *   getter still only ever exposes the most recently started run, unchanged.
  */
 
 import type { EventBus } from "./EventBus";
@@ -131,9 +145,20 @@ export interface RunHandle {
  */
 export type PipelineEngines = Readonly<Record<PipelineStepId, EngineDescriptor<unknown>>>;
 
-/** What runPipeline() resolves with: the run's identity and each stage's returned Artifact wrapper, in execution order. The raw payloads are also all persisted in the ArtifactStore under this runId. */
+/**
+ * The three states a pipeline run's result can settle in (Capability Sprint 19):
+ *   - AWAITING_APPROVAL: runPipeline() completed the pre-approval stages and is paused at the safety gate --
+ *     `artifacts` holds only those pre-approval outputs; Provider Execution has NOT run.
+ *   - COMPLETE: approve() ran every remaining stage successfully -- `artifacts` holds ALL thirteen outputs.
+ *   - ABORTED: reject() was called -- `artifacts` holds only the pre-approval outputs (identical to the
+ *     AWAITING_APPROVAL set this run paused with), since no post-approval stage ever ran.
+ */
+export type PipelineRunStatus = "AWAITING_APPROVAL" | "COMPLETE" | "ABORTED";
+
+/** What runPipeline()/approve()/reject() resolve with: the run's identity, its settled status, and every stage's returned Artifact wrapper produced so far, in execution order. The raw payloads are also all persisted in the ArtifactStore under this runId. */
 export interface PipelineRunResult {
   readonly runId: string;
+  readonly status: PipelineRunStatus;
   readonly artifacts: ReadonlyArray<Artifact<unknown>>;
 }
 
@@ -149,18 +174,42 @@ export interface Runtime {
   start(options: RuntimeOptions): Promise<RunHandle>;
 
   /**
-   * Capability Sprint 18: executes the FULL real engineering pipeline (FULL_ENGINEERING_WORKFLOW's thirteen
-   * stages) end to end through EngineRunner, driving the Lifecycle to COMPLETE on success or ABORTED on the
-   * first stage failure. Every stage's output is persisted in the ArtifactStore under this run's runId, and
-   * downstream stages consume those artifacts via RunArtifacts -- see runPipeline()'s own doc comment on
-   * OramRuntime for the per-stage Lifecycle mapping and the AWAITING_APPROVAL gate note.
+   * Capability Sprint 18/19: executes the pre-approval half of the FULL real engineering pipeline
+   * (FULL_ENGINEERING_WORKFLOW's stages up to, but NOT including, provider-execution) through EngineRunner,
+   * then stops at AWAITING_APPROVAL and returns -- it does NOT run Provider Execution and does NOT reach
+   * COMPLETE by itself. Every stage's output is persisted in the ArtifactStore under this run's runId, and
+   * downstream stages consume those artifacts via RunArtifacts. Call approve(runId) to continue to
+   * COMPLETE, or reject(runId) to abort without ever invoking Provider Execution -- see runPipeline()'s own
+   * doc comment on OramRuntime for the full per-stage Lifecycle mapping and the safety-gate rationale.
    */
   runPipeline(options: RuntimeOptions, engines: PipelineEngines): Promise<PipelineRunResult>;
 
-  /** Approves a run currently in AWAITING_APPROVAL, allowing it to proceed to EXECUTING. The sole path by which a human authorizes a Provider to actually change code -- see docs/ORAM_SPECIFICATION_v1.md Section 1.3, Core Philosophy. */
-  approve(runId: string): Promise<void>;
+  /**
+   * The real safety gate (Capability Sprint 19): approves a run currently paused at AWAITING_APPROVAL,
+   * resuming the SAME run (same runId, same persisted artifacts, same ArtifactStore) from Provider Execution
+   * through Pull Request Proposal. The sole path by which a human authorizes a Provider to actually change
+   * code -- see docs/ORAM_SPECIFICATION_v1.md Section 1.3, Core Philosophy. Throws if `runId` is not
+   * currently AWAITING_APPROVAL for this Runtime instance (unknown run, already approved, already rejected,
+   * or not yet at the gate) -- never silently re-runs or skips. Safe under concurrent/duplicate calls: only
+   * the first caller for a given runId ever reaches Provider Execution (see the class-level CONCURRENCY note
+   * on OramRuntime.approve()).
+   */
+  approve(runId: string): Promise<PipelineRunResult>;
 
-  /** Aborts a run in any non-terminal phase, recording `reason` for later inspection via `oram inspect`. */
+  /**
+   * The safety gate's rejection path (Capability Sprint 19): rejects a run currently paused at
+   * AWAITING_APPROVAL, transitioning it straight to ABORTED. Provider Execution is GUARANTEED never to run
+   * for a rejected run -- reject() only ever touches the pre-approval artifacts already persisted before the
+   * gate. Throws under the same "not currently AWAITING_APPROVAL" conditions approve() does (unknown run,
+   * already approved, already rejected, or not yet at the gate) -- so double-reject, reject-after-approve,
+   * and approve-after-reject all fail loudly rather than silently.
+   */
+  reject(runId: string, reason?: string): Promise<PipelineRunResult>;
+
+  /** The current Lifecycle phase of any run this Runtime instance has started or run -- the "status()" read for a specific runId, unlike the `lifecycle` getter above (which only ever exposes the most recently started run). Throws for an unknown runId. */
+  status(runId: string): LifecyclePhase;
+
+  /** Aborts a run in any non-terminal phase, recording `reason` for later inspection via `oram inspect`. General-purpose -- unlike reject(), not restricted to AWAITING_APPROVAL. */
   abort(runId: string, reason: string): Promise<void>;
 }
 
@@ -347,9 +396,28 @@ const PIPELINE_STEP_LIFECYCLE_PHASE: Readonly<Record<PipelineStepId, LifecyclePh
  * matching docs/ORAM_SPECIFICATION_v1.md Section 11's "one active Engineering Cycle per Runtime process"
  * non-goal without over-committing the public interface to that constraint forever.
  */
+/**
+ * Everything approve()/reject() need to resume a run paused at AWAITING_APPROVAL -- captured once by
+ * runPipeline() at the moment it stops, reused by whichever of approve()/reject() claims it first (see
+ * OramRuntime.approve()'s own CONCURRENCY note). Deliberately NOT exported: this is OramRuntime's own private
+ * in-memory bookkeeping, not a new public artifact/handle type -- Runtime's public surface for addressing a
+ * paused run remains exactly `runId`, per every other method on this interface.
+ */
+interface PendingPipelineRun {
+  readonly engineRunner: EngineRunner;
+  readonly engines: PipelineEngines;
+  readonly run: Run;
+  readonly runLifecycle: RunLifecycle;
+  /** The remaining FULL_ENGINEERING_WORKFLOW steps, starting at "provider-execution". */
+  readonly remainingSteps: ReadonlyArray<PipelineStepId>;
+  /** The artifacts already produced (and persisted) by the pre-approval stages -- carried into the final PipelineRunResult either way (approve() appends to it; reject() returns it unchanged). */
+  readonly preApprovalArtifacts: ReadonlyArray<Artifact<unknown>>;
+}
+
 export class OramRuntime implements Runtime {
   private readonly lifecycles = new Map<string, RunLifecycle>();
   private readonly runs = new Map<string, Run>();
+  private readonly pendingPipelineRuns = new Map<string, PendingPipelineRun>();
   private mostRecentRunId: string | null = null;
 
   constructor(
@@ -423,19 +491,38 @@ export class OramRuntime implements Runtime {
   }
 
   /**
-   * Capability Sprint 18 -- the full real pipeline. Walks FULL_ENGINEERING_WORKFLOW.steps in declared order:
-   * for each stage, advances the Lifecycle along its happy path to that stage's phase
-   * (PIPELINE_STEP_LIFECYCLE_PHASE), then invokes the caller-supplied EngineDescriptor through the same
-   * EngineRunner start() uses -- so every stage is persisted, event-published, and handed the RunArtifacts
-   * view exactly like every other engine invocation. On success the Lifecycle is advanced to COMPLETE and the
-   * Run marked finished; the first stage failure transitions to ABORTED, marks the Run failed, and rethrows.
+   * Walks the Lifecycle's happy path (each phase's first successor) until `target` is reached -- shared by
+   * runPipeline()/approve() so both advance phases identically. The pipeline's phases are always a strict
+   * subsequence of the happy path, so this can never wander past `target`. Capability Sprint 19: unlike
+   * Sprint 18's own version of this helper, this one NEVER auto-passes AWAITING_APPROVAL -- callers that
+   * need to stop there ask for exactly that as `target`; callers resuming after approval always start from
+   * EXECUTING (already past the gate via approve()'s own explicit transition), so this loop never crosses
+   * AWAITING_APPROVAL in either direction.
+   */
+  private advanceLifecycleTo(runLifecycle: RunLifecycle, runId: string, target: LifecyclePhase): void {
+    while (runLifecycle.state.phase !== target) {
+      const next = LIFECYCLE_TRANSITIONS[runLifecycle.state.phase][0];
+      if (!next) {
+        throw new Error(`Cannot advance run "${runId}" from terminal phase "${runLifecycle.state.phase}" to "${target}".`);
+      }
+      runLifecycle.transition(next);
+    }
+  }
+
+  /**
+   * Capability Sprint 18/19 -- the full real pipeline's PRE-APPROVAL half. Walks FULL_ENGINEERING_WORKFLOW's
+   * steps up to (but not including) "provider-execution" in declared order: for each stage, advances the
+   * Lifecycle to that stage's phase (PIPELINE_STEP_LIFECYCLE_PHASE), then invokes the caller-supplied
+   * EngineDescriptor through the same EngineRunner start() uses -- so every stage is persisted,
+   * event-published, and handed the RunArtifacts view exactly like every other engine invocation.
    *
-   * AWAITING_APPROVAL NOTE (disclosed, not hidden): the happy path passes through the human-approval gate on
-   * the way to EXECUTING. This method logs and auto-passes it, because the only Provider Execution that
-   * exists today is the deterministic in-memory MemoryProvider -- it generates prompt/patch artifacts and
-   * touches neither git, nor the filesystem, nor any shell command, so there is no side effect for a human to
-   * gate. The moment a real code-changing Provider exists, this auto-pass must be replaced by the real
-   * approve() flow -- that is precisely the future Safety Gate's job, and this note is the marker for it.
+   * REAL SAFETY GATE (Sprint 19): once the pre-approval stages finish, this method advances the Lifecycle to
+   * AWAITING_APPROVAL, records a PendingPipelineRun so approve()/reject() can resume this EXACT run later,
+   * and RETURNS -- it never invokes Provider Execution and never reaches COMPLETE by itself. There is no
+   * timer, no simulated approval, no auto-pass: the Lifecycle genuinely stays at AWAITING_APPROVAL until an
+   * explicit approve(runId) or reject(runId) call is made against this same OramRuntime instance. A
+   * pre-approval stage failure still transitions straight to ABORTED, marks the Run failed, and rethrows --
+   * unchanged from Sprint 18.
    */
   async runPipeline(options: RuntimeOptions, engines: PipelineEngines): Promise<PipelineRunResult> {
     const runId = generateRunId();
@@ -458,55 +545,113 @@ export class OramRuntime implements Runtime {
     });
     const engineRunner = new EngineRunner(context);
 
-    // Walks the Lifecycle's happy path (each phase's first successor) until `target` is reached -- the
-    // pipeline's phases are a strict subsequence of the happy path, so this can never wander. Passing
-    // through AWAITING_APPROVAL is logged explicitly (see this method's own gate note above).
-    const advanceTo = (target: LifecyclePhase): void => {
-      while (runLifecycle.state.phase !== target) {
-        const next = LIFECYCLE_TRANSITIONS[runLifecycle.state.phase][0];
-        if (!next) {
-          throw new Error(`Cannot advance run "${runId}" from terminal phase "${runLifecycle.state.phase}" to "${target}".`);
-        }
-        if (next === "AWAITING_APPROVAL" && target !== "AWAITING_APPROVAL") {
-          this.deps.logger.info(
-            null,
-            `Run "${runId}": auto-passing AWAITING_APPROVAL -- execution is the deterministic in-memory MemoryProvider (no side effects to gate). A real code-changing Provider requires the real approve() flow.`
-          );
-        }
-        runLifecycle.transition(next);
-      }
-    };
-
     this.deps.logger.info(null, `Starting full Engineering Pipeline "${runId}" for repository "${options.repositoryPath}".`);
+
+    // The gate sits exactly where EXECUTING begins -- derived from PIPELINE_STEP_LIFECYCLE_PHASE rather than
+    // a hardcoded stage name, so this split stays correct if a future stage is ever inserted into either half.
+    const gateIndex = FULL_ENGINEERING_WORKFLOW.steps.findIndex((step) => PIPELINE_STEP_LIFECYCLE_PHASE[step] === "EXECUTING");
+    const preApprovalSteps = FULL_ENGINEERING_WORKFLOW.steps.slice(0, gateIndex);
+    const postApprovalSteps = FULL_ENGINEERING_WORKFLOW.steps.slice(gateIndex);
 
     const artifacts: Artifact<unknown>[] = [];
     try {
-      for (const step of FULL_ENGINEERING_WORKFLOW.steps) {
-        advanceTo(PIPELINE_STEP_LIFECYCLE_PHASE[step]);
+      for (const step of preApprovalSteps) {
+        this.advanceLifecycleTo(runLifecycle, runId, PIPELINE_STEP_LIFECYCLE_PHASE[step]);
         const artifact = await engineRunner.run(runId, engines[step]);
         run.addArtifact(artifact);
         artifacts.push(artifact);
       }
-      advanceTo("COMPLETE");
+    } catch (error) {
+      runLifecycle.transition("ABORTED");
+      run.fail();
+      const message = error instanceof Error ? error.message : String(error);
+      this.deps.logger.error(null, `Full Engineering Pipeline "${runId}" aborted before reaching the safety gate: ${message}`);
+      throw error;
+    }
+
+    this.advanceLifecycleTo(runLifecycle, runId, "AWAITING_APPROVAL");
+    this.pendingPipelineRuns.set(runId, { engineRunner, engines, run, runLifecycle, remainingSteps: postApprovalSteps, preApprovalArtifacts: artifacts });
+    this.deps.logger.info(
+      null,
+      `Full Engineering Pipeline "${runId}" is paused at AWAITING_APPROVAL: ${artifacts.length} artifact(s) persisted so far. ` +
+        `Provider Execution has NOT occurred. Call approve("${runId}") to continue or reject("${runId}") to abort.`
+    );
+
+    return { runId, status: "AWAITING_APPROVAL", artifacts };
+  }
+
+  /**
+   * The real safety gate (Capability Sprint 19). See Runtime.approve()'s own interface doc for the full
+   * contract; this is its implementation.
+   *
+   * CONCURRENCY: the very first thing this method does is a synchronous `Map.get()` + `Map.delete()`, with
+   * NO `await` between them. In Node's single-threaded event loop, a synchronous span of code can never be
+   * interleaved with another call's synchronous span -- so if two callers both invoke `approve(runId)`, the
+   * one that runs first synchronously claims (and removes) the PendingPipelineRun before yielding control;
+   * the second caller's own synchronous `get()` then finds nothing and throws immediately, BEFORE either
+   * caller has awaited anything. This is what guarantees Provider Execution runs at most once per runId no
+   * matter how many overlapping approve()/reject() calls arrive for it (see this method's own test coverage:
+   * "double approval," "concurrent approvals," "approve after reject").
+   */
+  async approve(runId: string): Promise<PipelineRunResult> {
+    const pending = this.pendingPipelineRuns.get(runId);
+    if (!pending) {
+      throw new Error(
+        `Cannot approve run "${runId}": no run is currently AWAITING_APPROVAL on this Runtime instance ` +
+          `(it may be unknown, already approved, already rejected, or not yet paused at the safety gate).`
+      );
+    }
+    this.pendingPipelineRuns.delete(runId); // synchronous claim -- see this method's own CONCURRENCY note above.
+
+    const { engineRunner, engines, run, runLifecycle, remainingSteps, preApprovalArtifacts } = pending;
+    this.deps.logger.info(null, `Run "${runId}" APPROVED -- proceeding to Provider Execution.`);
+    runLifecycle.transition("EXECUTING"); // the one transition that only ever happens as a direct result of approve().
+
+    const artifacts: Artifact<unknown>[] = [...preApprovalArtifacts];
+    try {
+      for (const step of remainingSteps) {
+        this.advanceLifecycleTo(runLifecycle, runId, PIPELINE_STEP_LIFECYCLE_PHASE[step]);
+        const artifact = await engineRunner.run(runId, engines[step]);
+        run.addArtifact(artifact);
+        artifacts.push(artifact);
+      }
+      this.advanceLifecycleTo(runLifecycle, runId, "COMPLETE");
       run.finish();
     } catch (error) {
       runLifecycle.transition("ABORTED");
       run.fail();
       const message = error instanceof Error ? error.message : String(error);
-      this.deps.logger.error(null, `Full Engineering Pipeline "${runId}" aborted: ${message}`);
+      this.deps.logger.error(null, `Run "${runId}" aborted during approved execution: ${message}`);
       throw error;
     }
 
     this.deps.logger.info(null, `Full Engineering Pipeline "${runId}" is COMPLETE: ${artifacts.length} artifact(s) persisted.`);
-    return { runId, artifacts };
+    return { runId, status: "COMPLETE", artifacts };
   }
 
-  async approve(runId: string): Promise<void> {
-    if (!this.lifecycles.has(runId)) throw new Error(`Cannot approve unknown run "${runId}".`);
-    throw new Error(
-      `OramRuntime.approve() is not implemented yet -- approving run "${runId}" would need to invoke a Provider ` +
-        `(the EXECUTING phase), which is out of scope until Phase 3.`
-    );
+  /** The safety gate's rejection path (Capability Sprint 19). See Runtime.reject()'s own interface doc for the full contract; uses the same synchronous claim-then-delete pattern approve() does, for the same concurrency guarantee. */
+  async reject(runId: string, reason?: string): Promise<PipelineRunResult> {
+    const pending = this.pendingPipelineRuns.get(runId);
+    if (!pending) {
+      throw new Error(
+        `Cannot reject run "${runId}": no run is currently AWAITING_APPROVAL on this Runtime instance ` +
+          `(it may be unknown, already approved, already rejected, or not yet paused at the safety gate).`
+      );
+    }
+    this.pendingPipelineRuns.delete(runId); // synchronous claim -- mirrors approve()'s own CONCURRENCY note.
+
+    const { run, runLifecycle, preApprovalArtifacts } = pending;
+    runLifecycle.transition("ABORTED");
+    run.fail();
+    this.deps.logger.warn(null, `Run "${runId}" REJECTED${reason ? `: ${reason}` : ""}. Provider Execution will not occur.`);
+
+    return { runId, status: "ABORTED", artifacts: preApprovalArtifacts };
+  }
+
+  status(runId: string): LifecyclePhase {
+    const runLifecycle = this.lifecycles.get(runId);
+    if (!runLifecycle) throw new Error(`Cannot get status of unknown run "${runId}".`);
+    return runLifecycle.state.phase;
   }
 
   async abort(runId: string, reason: string): Promise<void> {
@@ -516,6 +661,11 @@ export class OramRuntime implements Runtime {
     // Invariant: every runId in `lifecycles` was inserted into `runs` in the same breath, in start() -- see
     // the constructor-adjacent comment on `lifecycle` above for the same pattern.
     this.runs.get(runId)?.fail();
+    // A general abort() of a run still paused at the gate must also revoke it, so a stale PendingPipelineRun
+    // can never let a later approve()/reject() call "resurrect" an already-aborted run (belt-and-braces: even
+    // without this, approve()/reject()'s own runLifecycle.transition() would already throw on an ABORTED --
+    // i.e. terminal -- phase, per Lifecycle.ts's canTransition()).
+    this.pendingPipelineRuns.delete(runId);
     this.deps.logger.warn(null, `Engineering Cycle "${runId}" aborted: ${reason}`);
   }
 }

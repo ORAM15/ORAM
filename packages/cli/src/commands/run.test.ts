@@ -1,12 +1,10 @@
 /**
- * Smoke coverage for the real `oram run` (Capability Sprint 18 -- Full Runtime Pipeline).
+ * Smoke coverage for the real `oram run` and its real safety gate (Capability Sprints 18 and 19).
  *
  * Not snapshot-based: the report intentionally contains a per-invocation runId, artifact-store path, and
- * execution time. This asserts the structural facts instead: exit code 0, one report, every one of the
- * thirteen stages checked [✓] (each checkmark is derived from a real persisted artifact, never printed on
- * faith), the FINAL DECISION and PULL REQUEST PROPOSAL sections, and the COMPLETE lifecycle. The pipeline
- * itself already fails loudly on any recomputation (createFullPipelineEngines() wires throwing fallbacks),
- * so exit code 0 doubles as the handoff proof.
+ * execution time. This asserts the structural facts instead: exit code 0, one report per invocation, honest
+ * per-stage checkmarks, and the three demonstrable paths -- paused at the gate, approved through to COMPLETE,
+ * and rejected to ABORTED, each entirely non-interactive (no stdin involved, so this is CI-safe).
  *
  * Run with: node --import tsx --test packages/cli/src/commands/run.test.ts
  */
@@ -29,7 +27,7 @@ const FIXTURE = path.join(
   "concentrated-monorepo"
 );
 
-const ALL_STAGE_LABELS = [
+const PRE_APPROVAL_LABELS = [
   "Repository Analysis",
   "Engineering Knowledge",
   "Engineering Reasoning",
@@ -37,66 +35,124 @@ const ALL_STAGE_LABELS = [
   "Engineering Missions",
   "Implementation Requests",
   "Execution Planning",
-  "Provider Execution",
-  "Validation",
-  "Recommendation",
-  "Reflection",
-  "Adaptive Decision",
-  "Pull Request Proposal",
 ];
 
-test("oram run <concentrated-monorepo>: executes every real stage through the Runtime and reports COMPLETE", async (t) => {
-  const artifactsDir = await fsp.mkdtemp(path.join(os.tmpdir(), "oram-run-cli-"));
-  t.after(async () => {
-    await fsp.rm(artifactsDir, { recursive: true, force: true });
-  });
+const POST_APPROVAL_LABELS = ["Provider Execution", "Validation", "Recommendation", "Reflection", "Adaptive Decision", "Pull Request Proposal"];
 
+async function runWithCapturedOutput(args: string[]): Promise<{ exitCode: number; logged: string[] }> {
   const logged: string[] = [];
   const originalLog = console.log;
   console.log = (message?: unknown) => {
     logged.push(String(message));
   };
-
-  let exitCode: number;
   try {
-    exitCode = await runCommand([FIXTURE, "--artifacts-dir", artifactsDir]);
+    const exitCode = await runCommand(args);
+    return { exitCode, logged };
   } finally {
     console.log = originalLog;
   }
+}
+
+test("oram run <concentrated-monorepo>: stops at AWAITING_APPROVAL -- Provider Execution has NOT occurred", async (t) => {
+  const artifactsDir = await fsp.mkdtemp(path.join(os.tmpdir(), "oram-run-cli-gate-"));
+  t.after(async () => {
+    await fsp.rm(artifactsDir, { recursive: true, force: true });
+  });
+
+  const { exitCode, logged } = await runWithCapturedOutput([FIXTURE, "--artifacts-dir", artifactsDir]);
 
   assert.equal(exitCode, 0);
   assert.equal(logged.length, 1, "runCommand should print exactly one report");
 
   const report = logged[0]!;
-  for (const label of ALL_STAGE_LABELS) {
-    assert.ok(report.includes(`[✓] ${label}`), `report should show [✓] ${label}`);
+  for (const label of PRE_APPROVAL_LABELS) assert.ok(report.includes(`[✓] ${label}`), `report should show [✓] ${label}`);
+  for (const label of POST_APPROVAL_LABELS) assert.ok(report.includes(`[ ] ${label}`), `report should show [ ] ${label} (not yet run)`);
+  assert.ok(report.includes("STATUS ................. AWAITING_APPROVAL"));
+  assert.ok(report.includes("Provider Execution has NOT occurred."));
+  assert.ok(!report.includes("Run APPROVED"));
+  assert.ok(!report.includes("Run REJECTED"));
+  assert.ok(report.includes("Lifecycle .............. AWAITING_APPROVAL"));
+  assert.ok(report.includes("Artifacts Persisted .... 7"));
+  assert.ok(report.includes("ORAM RUN AWAITING_APPROVAL"));
+
+  // Exactly the seven pre-approval artifacts are really on disk -- nothing post-approval exists.
+  const runsDir = path.join(artifactsDir, "runs");
+  const runIds = await fsp.readdir(runsDir);
+  assert.equal(runIds.length, 1);
+  const artifactsRoot = path.join(runsDir, runIds[0]!, "artifacts");
+  const stageDirs = (await fsp.readdir(artifactsRoot)).filter((name) => name !== "_index.json");
+  assert.equal(stageDirs.length, 7);
+  assert.ok(!stageDirs.includes("provider-execution"));
+});
+
+test("oram run <concentrated-monorepo> --approve: continues the SAME run through Provider Execution to COMPLETE", async (t) => {
+  const artifactsDir = await fsp.mkdtemp(path.join(os.tmpdir(), "oram-run-cli-approve-"));
+  t.after(async () => {
+    await fsp.rm(artifactsDir, { recursive: true, force: true });
+  });
+
+  const { exitCode, logged } = await runWithCapturedOutput([FIXTURE, "--artifacts-dir", artifactsDir, "--approve"]);
+
+  assert.equal(exitCode, 0);
+  assert.equal(logged.length, 1);
+
+  const report = logged[0]!;
+  for (const label of [...PRE_APPROVAL_LABELS, ...POST_APPROVAL_LABELS]) {
+    assert.ok(report.includes(`[✓] ${label}`), `report should show [✓] ${label} after approval`);
   }
-  assert.ok(!report.includes("[✗]"), "no stage may be reported as failed");
+  assert.ok(report.includes("Run APPROVED. Provider Execution has now occurred exactly once."));
   assert.ok(report.includes("FINAL DECISION"));
   assert.ok(report.includes("PULL REQUEST PROPOSAL (generated, not published)"));
   assert.ok(report.includes("Lifecycle .............. COMPLETE"));
   assert.ok(report.includes("Artifacts Persisted .... 13"));
+  assert.ok(report.includes("ORAM RUN COMPLETE"));
 
-  // The artifacts really are on disk where the report says they are (one run directory, 13 stage artifacts + index).
+  // All 13 stage artifacts, one run, on disk.
   const runsDir = path.join(artifactsDir, "runs");
   const runIds = await fsp.readdir(runsDir);
   assert.equal(runIds.length, 1);
+  const artifactsRoot = path.join(runsDir, runIds[0]!, "artifacts");
+  const stageDirs = (await fsp.readdir(artifactsRoot)).filter((name) => name !== "_index.json");
+  assert.equal(stageDirs.length, 13);
+});
+
+test("oram run <concentrated-monorepo> --reject: reaches ABORTED -- Provider Execution never occurred", async (t) => {
+  const artifactsDir = await fsp.mkdtemp(path.join(os.tmpdir(), "oram-run-cli-reject-"));
+  t.after(async () => {
+    await fsp.rm(artifactsDir, { recursive: true, force: true });
+  });
+
+  const { exitCode, logged } = await runWithCapturedOutput([FIXTURE, "--artifacts-dir", artifactsDir, "--reject=not ready yet"]);
+
+  assert.equal(exitCode, 0);
+  assert.equal(logged.length, 1);
+
+  const report = logged[0]!;
+  assert.ok(report.includes("Run REJECTED: not ready yet."));
+  assert.ok(report.includes("Provider Execution did NOT occur and never will for this run."));
+  assert.ok(report.includes("Lifecycle .............. ABORTED"));
+  assert.ok(report.includes("Artifacts Persisted .... 7"));
+  assert.ok(report.includes("ORAM RUN ABORTED"));
+  assert.ok(!report.includes("FINAL DECISION"));
+  assert.ok(!report.includes("PULL REQUEST PROPOSAL"));
+
+  // Only the seven pre-approval artifacts on disk -- rejection must never produce a provider-execution artifact.
+  const runsDir = path.join(artifactsDir, "runs");
+  const runIds = await fsp.readdir(runsDir);
+  const artifactsRoot = path.join(runsDir, runIds[0]!, "artifacts");
+  const stageDirs = (await fsp.readdir(artifactsRoot)).filter((name) => name !== "_index.json");
+  assert.equal(stageDirs.length, 7);
+  assert.ok(!stageDirs.includes("provider-execution"));
+});
+
+test("oram run --approve --reject: mutually exclusive, exits 1", async () => {
+  const { exitCode, logged } = await runWithCapturedOutput([FIXTURE, "--approve", "--reject"]);
+  assert.equal(exitCode, 1);
+  assert.equal(logged.length, 0);
 });
 
 test("oram run <missing path>: exits 1 without printing a report", async () => {
-  const logged: string[] = [];
-  const originalLog = console.log;
-  console.log = (message?: unknown) => {
-    logged.push(String(message));
-  };
-
-  let exitCode: number;
-  try {
-    exitCode = await runCommand([]);
-  } finally {
-    console.log = originalLog;
-  }
-
+  const { exitCode, logged } = await runWithCapturedOutput([]);
   assert.equal(exitCode, 1);
   assert.equal(logged.length, 0);
 });
