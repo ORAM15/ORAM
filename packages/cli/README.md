@@ -67,10 +67,13 @@ Engineering Memory, recording that run as one `RunSnapshot` into a fresh, in-pro
 Recommendation + the latest recorded Memory run into one `EngineeringDecision`)) and prints a
 presentation-ready console report -- see
 `src/report/`. None are wired to `@oram/runtime` (no Lifecycle, no ArtifactStore, no EventBus); that's
-deliberate, see each command's own header comment. `help`/`version` (and their `--help`/`-h`/`--version`/`-v`
-flag aliases -- see `src/index.ts`) are real too. Every other command (`init`, `run`, `validate`, `inspect`,
-`dashboard`, `doctor`, `replay`) is still command architecture only, currently printing
-`"Not implemented yet."`. See `ORAM_V3_MIGRATION_PLAN.md` Milestone 1.
+deliberate, see each command's own header comment. `run` (Capability Sprint 18) is the exception and the
+primary command: it executes the full real thirteen-stage pipeline through `@oram/runtime`'s
+`Runtime.runPipeline()` -- real Lifecycle to COMPLETE, real EngineRunner, real ArtifactStore persistence
+under `<repository>/.oram` (or `--artifacts-dir`), artifact handoff between every stage. `help`/`version`
+(and their `--help`/`-h`/`--version`/`-v` flag aliases -- see `src/index.ts`) are real too. Every other
+command (`init`, `validate`, `inspect`, `dashboard`, `doctor`, `replay`) is still command architecture only,
+currently printing `"Not implemented yet."`. See `ORAM_V3_MIGRATION_PLAN.md` Milestone 1.
 
 **Packaging (Capability Sprint 4.5):** `bin.ts` is now a real, buildable entry point -- `npm run build`
 bundles it with esbuild into `packages/cli/dist/bin.js` (not committed; see this repo's root `.gitignore`),

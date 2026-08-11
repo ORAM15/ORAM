@@ -24,7 +24,7 @@
  * TYPES this wrapper's shape requires, matching every prior stage.
  */
 
-import type { EngineDescriptor, ArtifactRef, RuntimeContext } from "@oram/runtime";
+import type { EngineDescriptor, ArtifactRef, RuntimeContext, RunArtifacts } from "@oram/runtime";
 import type { OramEvent } from "@oram/events";
 import { buildRepositoryAnalysis } from "../repository-analyzer/analysis/build-analysis";
 import { buildEngineeringKnowledge } from "../engineering-knowledge/analysis/build-knowledge";
@@ -47,8 +47,14 @@ export function createExecutionPlanningEngine(
   return {
     stage: "execution-planning",
     artifactName: "execution-planning",
-    run(context: RuntimeContext): ExecutionPlanSet {
-      const requestSet = loadImplementationRequests(context);
+    // Sprint 18: consumes the current run's persisted implementation-requests artifact when available;
+    // falls back to the injected/default loader otherwise (Sprint 17's artifact-first contract).
+    async run(context: RuntimeContext, artifacts?: RunArtifacts): Promise<ExecutionPlanSet> {
+      const fromRun =
+        artifacts && (await artifacts.has("implementation-requests", "implementation-requests"))
+          ? await artifacts.require<ImplementationRequestSet>("implementation-requests", "implementation-requests")
+          : null;
+      const requestSet = fromRun ?? loadImplementationRequests(context);
       return buildExecutionPlans(requestSet);
     },
     buildEvent(runId: string, output: ExecutionPlanSet, _ref: ArtifactRef): OramEvent {

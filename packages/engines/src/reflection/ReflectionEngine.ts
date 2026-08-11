@@ -29,7 +29,7 @@
  *      for a future PR.
  */
 
-import type { EngineDescriptor, ArtifactRef, RuntimeContext } from "@oram/runtime";
+import type { EngineDescriptor, ArtifactRef, RuntimeContext, RunArtifacts } from "@oram/runtime";
 import type { OramEvent } from "@oram/events";
 import { buildRepositoryAnalysis } from "../repository-analyzer/analysis/build-analysis";
 import { buildEngineeringKnowledge } from "../engineering-knowledge/analysis/build-knowledge";
@@ -80,7 +80,27 @@ export function createReflectionEngine(
   return {
     stage: "reflection",
     artifactName: "reflection",
-    run(context: RuntimeContext): ReflectionReport {
+    // Sprint 18: consumes the current run's persisted validation + recommendation artifacts when BOTH are
+    // available; with NEITHER available, falls back to the injected/default loader; with exactly one
+    // available, fails loudly -- the same partial-run contract adaptive-decision/pull-request established in
+    // Sprint 17 (silently recomputing over a real artifact would discard it).
+    async run(context: RuntimeContext, artifacts?: RunArtifacts): Promise<ReflectionReport> {
+      if (artifacts) {
+        const hasValidation = await artifacts.has("validation", "validation");
+        const hasRecommendation = await artifacts.has("recommendation", "recommendation");
+        if (hasValidation !== hasRecommendation) {
+          const missing = hasValidation ? "recommendation/recommendation" : "validation/validation";
+          throw new Error(
+            `Reflection Engine: run "${artifacts.runId}" has some upstream artifacts but is missing: ${missing}. ` +
+              `Refusing to mix persisted artifacts with recomputation -- re-run the missing upstream stage for this run.`
+          );
+        }
+        if (hasValidation && hasRecommendation) {
+          const validationResult = await artifacts.require<ValidationResult>("validation", "validation");
+          const recommendationSet = await artifacts.require<RecommendationSet>("recommendation", "recommendation");
+          return buildReflectionReport(validationResult, recommendationSet);
+        }
+      }
       const { validationResult, recommendationSet } = loadInputs(context);
       return buildReflectionReport(validationResult, recommendationSet);
     },

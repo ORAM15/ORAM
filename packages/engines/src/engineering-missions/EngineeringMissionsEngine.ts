@@ -18,7 +18,7 @@
  *      MissionGraphGeneratedEvent is the correct long-term fix, left for a future PR.
  */
 
-import type { EngineDescriptor, ArtifactRef, RuntimeContext } from "@oram/runtime";
+import type { EngineDescriptor, ArtifactRef, RuntimeContext, RunArtifacts } from "@oram/runtime";
 import type { OramEvent } from "@oram/events";
 import { buildRepositoryAnalysis } from "../repository-analyzer/analysis/build-analysis";
 import { buildEngineeringKnowledge } from "../engineering-knowledge/analysis/build-knowledge";
@@ -35,8 +35,14 @@ export function createEngineeringMissionsEngine(
   return {
     stage: "engineering-missions",
     artifactName: "engineering-missions",
-    run(context: RuntimeContext): MissionGraph {
-      const plan = loadEngineeringPlan(context);
+    // Sprint 18: consumes the current run's persisted engineering-planning artifact when available;
+    // falls back to the injected/default loader otherwise (Sprint 17's artifact-first contract).
+    async run(context: RuntimeContext, artifacts?: RunArtifacts): Promise<MissionGraph> {
+      const fromRun =
+        artifacts && (await artifacts.has("engineering-planning", "engineering-planning"))
+          ? await artifacts.require<EngineeringPlan>("engineering-planning", "engineering-planning")
+          : null;
+      const plan = fromRun ?? loadEngineeringPlan(context);
       return buildMissionGraph(plan);
     },
     buildEvent(runId: string, output: MissionGraph, _ref: ArtifactRef): OramEvent {

@@ -11,8 +11,8 @@ import type { StepId } from "./step";
  * registry and no mechanism to select among multiple Workflows. That is explicitly out of scope for this
  * change; see ADR 0004 for the fuller design this is a deliberately narrow first step toward.
  */
-export interface Workflow {
+export interface Workflow<TStepId extends string = StepId> {
   readonly id: string;
   readonly name: string;
-  readonly steps: ReadonlyArray<StepId>;
+  readonly steps: ReadonlyArray<TStepId>;
 }

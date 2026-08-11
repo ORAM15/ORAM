@@ -25,7 +25,7 @@
  *      made unilaterally in this one.
  */
 
-import type { EngineDescriptor, ArtifactRef, RuntimeContext } from "@oram/runtime";
+import type { EngineDescriptor, ArtifactRef, RuntimeContext, RunArtifacts } from "@oram/runtime";
 import type { OramEvent } from "@oram/events";
 import { buildRepositoryAnalysis } from "../repository-analyzer/analysis/build-analysis";
 import { buildEngineeringKnowledge } from "../engineering-knowledge/analysis/build-knowledge";
@@ -40,8 +40,14 @@ export function createEngineeringReasoningEngine(
   return {
     stage: "engineering-reasoning",
     artifactName: "engineering-reasoning",
-    run(context: RuntimeContext): EngineeringReasoning {
-      const knowledge = loadEngineeringKnowledge(context);
+    // Sprint 18: consumes the current run's persisted engineering-knowledge artifact when available;
+    // falls back to the injected/default loader otherwise (Sprint 17's artifact-first contract).
+    async run(context: RuntimeContext, artifacts?: RunArtifacts): Promise<EngineeringReasoning> {
+      const fromRun =
+        artifacts && (await artifacts.has("engineering-knowledge", "engineering-knowledge"))
+          ? await artifacts.require<EngineeringKnowledge>("engineering-knowledge", "engineering-knowledge")
+          : null;
+      const knowledge = fromRun ?? loadEngineeringKnowledge(context);
       return buildEngineeringReasoning(knowledge);
     },
     buildEvent(runId: string, output: EngineeringReasoning, _ref: ArtifactRef): OramEvent {
