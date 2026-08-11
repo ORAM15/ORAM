@@ -12,8 +12,9 @@
  * fallbacks still exist for standalone/direct invocation outside runPipeline; they are simply not used here.
  *
  * No LLM, no git, no GitHub anywhere in this pipeline: Provider Execution uses the existing deterministic
- * MemoryProvider default, and the final stage produces a PullRequestProposal artifact -- generated, never
- * published.
+ * MemoryProvider default, and the Publisher stage (Capability Sprint 20) uses the existing deterministic
+ * MemoryPublisher default -- always dry-run, never a real git/GitHub call. The Pull Request Proposal is
+ * generated; the Publish Record describes what publishing it WOULD do -- neither is ever actually pushed.
  */
 
 import type { PipelineEngines } from "@oram/runtime";
@@ -30,6 +31,7 @@ import { createRecommendationEngine } from "./recommendation/RecommendationEngin
 import { createReflectionEngine } from "./reflection/ReflectionEngine";
 import { createAdaptiveDecisionEngine } from "./adaptive-decision/DecisionEngine";
 import { createPullRequestEngine } from "./pull-request/PullRequestEngine";
+import { createPublisherEngine } from "./publisher/PublisherEngine";
 
 /** The loud failure every full-pipeline stage's recompute fallback is wired to -- reaching it means the stage did not find its upstream artifact(s) for the current run, which inside runPipeline() is always a bug, never a situation to paper over by recomputing. */
 function forbidRecompute(stage: string, upstream: string): never {
@@ -54,5 +56,6 @@ export function createFullPipelineEngines(): PipelineEngines {
     reflection: createReflectionEngine(() => forbidRecompute("reflection", "validation/validation + recommendation/recommendation")),
     "adaptive-decision": createAdaptiveDecisionEngine(() => forbidRecompute("adaptive-decision", "validation + recommendation + reflection")),
     "pull-request": createPullRequestEngine(() => forbidRecompute("pull-request", "implementation-requests + execution-planning + validation + recommendation + reflection + adaptive-decision")),
+    publisher: createPublisherEngine(() => forbidRecompute("publisher", "pull-request/pull-request-proposal")),
   };
 }

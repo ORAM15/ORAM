@@ -31,6 +31,8 @@ import { FULL_ENGINEERING_WORKFLOW } from "@oram/core";
 import { createFullPipelineEngines } from "./full-pipeline";
 import type { EngineeringDecision } from "./adaptive-decision/analysis/types";
 import type { PullRequestProposal } from "./pull-request/analysis/types";
+import type { PublishRecord } from "./publisher/analysis/types";
+import { buildPublishRecord } from "./publisher/analysis/build-publish-record";
 import { buildRepositoryAnalysis } from "./repository-analyzer/analysis/build-analysis";
 import { buildEngineeringKnowledge } from "./engineering-knowledge/analysis/build-knowledge";
 import { buildEngineeringReasoning } from "./engineering-reasoning/analysis/build-reasoning";
@@ -129,6 +131,16 @@ test("full pipeline safety gate: Provider Execution does not run until approve()
   assert.equal(proposal.branchName, expected.branchName);
   assert.equal(proposal.decision, decision.decisionType);
   assert.equal(proposal.repositoryId, "repository:concentrated-monorepo");
+
+  // Capability Sprint 20: the Publisher Engine consumed THIS run's own proposal artifact (not a recomputed
+  // one -- its recompute fallback is wired to throw inside createFullPipelineEngines()) and produced a
+  // PublishRecord matching what the pure function produces from the exact same proposal.
+  const publishRecord = await artifactStore.read<PublishRecord>({ runId: completed.runId, stage: "publisher", name: "publish-record" });
+  const expectedPublishRecord = buildPublishRecord({ repositoryRoot: FIXTURE, proposal });
+  assert.equal(publishRecord.outcome, expectedPublishRecord.outcome);
+  assert.equal(publishRecord.branchName, expectedPublishRecord.branchName);
+  assert.equal(publishRecord.dryRun, true, "MemoryPublisher (the full-pipeline default) is always dry-run");
+  assert.equal(publishRecord.pullRequestUrl, null, "no real pull request was ever created");
 });
 
 test("full pipeline safety gate: reject() reaches ABORTED, Provider Execution never runs, no post-approval artifact exists", async (t) => {
@@ -163,6 +175,9 @@ test("full pipeline: runs against this actual repository without recomputation (
   const completed = await runtime.approve(paused.runId);
   assert.equal(completed.status, "COMPLETE");
   assert.equal(completed.artifacts.length, FULL_ENGINEERING_WORKFLOW.steps.length);
-  const proposal = completed.artifacts[completed.artifacts.length - 1]!.payload as PullRequestProposal;
-  assert.equal(proposal.repositoryId, "repository:oram");
+
+  const publisherIndex = FULL_ENGINEERING_WORKFLOW.steps.indexOf("publisher");
+  const record = completed.artifacts[publisherIndex]!.payload as PublishRecord;
+  assert.equal(record.repositoryId, "repository:oram");
+  assert.equal(record.dryRun, true);
 });

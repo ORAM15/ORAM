@@ -1,0 +1,35 @@
+{
+  "id": "<normalized>",
+  "timestamp": "<normalized>",
+  "repositoryId": "repository:concentrated-monorepo",
+  "proposalId": "<normalized>",
+  "publisherId": "memory-publisher-v1",
+  "dryRun": true,
+  "outcome": "PUBLISHED",
+  "reason": "Simulated branch \"oram/improve-subsystem-documentation\" through all four publishing stages.",
+  "branchName": "oram/improve-subsystem-documentation",
+  "title": "ORAM: Improve Subsystem Documentation (+1 more)",
+  "stages": [
+    {
+      "name": "CREATE_BRANCH",
+      "status": "PASS",
+      "details": "[dry-run] would run: git checkout -b oram/improve-subsystem-documentation"
+    },
+    {
+      "name": "COMMIT",
+      "status": "PASS",
+      "details": "[dry-run] would run: git add -- <2 proposed change(s)> && git commit -m \"ORAM: Improve Subsystem Documentation (+1 more)\""
+    },
+    {
+      "name": "PUSH",
+      "status": "PASS",
+      "details": "[dry-run] would run: git push -u origin oram/improve-subsystem-documentation"
+    },
+    {
+      "name": "CREATE_DRAFT_PULL_REQUEST",
+      "status": "PASS",
+      "details": "[dry-run] would run: gh pr create --draft --title \"ORAM: Improve Subsystem Documentation (+1 more)\" --head oram/improve-subsystem-documentation --base main (no real pull request was created)"
+    }
+  ],
+  "pullRequestUrl": null
+}

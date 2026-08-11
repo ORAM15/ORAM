@@ -1,0 +1,134 @@
+┌─────────────────────────┐
+│       Repository        │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│   Repository Analysis   │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Knowledge  │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Reasoning  │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Planning   │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Engineering Missions   │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ Implementation Requests │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│   Execution Planning    │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│ Implementation Executor │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│   Provider Execution    │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│       Validation        │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│     Recommendation      │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│       Reflection        │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│    Adaptive Decision    │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│  Pull Request Proposal  │
+└─────────────────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│        Publisher        │
+└─────────────────────────┘
+
+====================================================
+ORAM Publish Record
+====================================================
+
+Repository
+✔ Name: concentrated-demo
+✔ Language: JavaScript
+✔ Package Manager: Unknown
+✔ Architecture: Monorepo (packages/* convention)
+
+----------------------------------------------------
+Publish Record
+----------------------------------------------------
+
+Outcome ................ PUBLISHED
+Publisher .............. memory-publisher-v1
+Dry Run ................ YES -- no real git/GitHub operation was performed
+Branch ................. oram/improve-subsystem-documentation
+Reason ................. Simulated branch "oram/improve-subsystem-documentation" through all four publishing stages.
+Pull Request URL ....... None
+
+----------------------------------------------------
+Publishing Stages
+----------------------------------------------------
+
+✔ CREATE_BRANCH: [dry-run] would run: git checkout -b oram/improve-subsystem-documentation
+✔ COMMIT: [dry-run] would run: git add -- <2 proposed change(s)> && git commit -m "ORAM: Improve Subsystem Documentation (+1 more)"
+✔ PUSH: [dry-run] would run: git push -u origin oram/improve-subsystem-documentation
+✔ CREATE_DRAFT_PULL_REQUEST: [dry-run] would run: gh pr create --draft --title "ORAM: Improve Subsystem Documentation (+1 more)" --head oram/improve-subsystem-documentation --base main (no real pull request was created)
+
+----------------------------------------------------
+Statistics
+----------------------------------------------------
+
+Files Scanned .......... 10
+Subsystems ............. 4
+Findings ............... 5
+Missions ............... 2
+Proposal Kind .......... IMPLEMENTATION
+Execution Time ......... 0 ms
+
+----------------------------------------------------
+Pipeline Status
+----------------------------------------------------
+
+✔ Pull Request Proposal Complete
+✔ Publisher Complete
+
+Overall Status
+SUCCESS
+
+Note: this was a dry run. Nothing was actually committed, pushed,
+or opened on GitHub. Real publishing remains future work.
+
+====================================================

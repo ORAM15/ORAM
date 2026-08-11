@@ -31,14 +31,15 @@
  * tests to keep fixture directories pristine).
  *
  * SAFETY: Provider Execution is the existing deterministic MemoryProvider (no LLM, no git, no shell); the
- * final stage produces a PullRequestProposal artifact -- generated, NEVER published. No GitHub API is
- * called anywhere in this command.
+ * Pull Request Proposal stage produces a PullRequestProposal artifact, and the final Publisher stage
+ * produces a PublishRecord via the existing deterministic MemoryPublisher (always dry-run) -- generated,
+ * NEVER really published. No GitHub API is called anywhere in this command.
  */
 import { existsSync } from "node:fs";
 import * as path from "node:path";
 import { RuntimeBuilder, type PipelineRunResult } from "@oram/runtime";
 import { FULL_ENGINEERING_WORKFLOW, type PipelineStepId } from "@oram/core";
-import { createFullPipelineEngines, type EngineeringDecision, type PullRequestProposal, type RepositoryAnalysis } from "@oram/engines";
+import { createFullPipelineEngines, type EngineeringDecision, type PullRequestProposal, type PublishRecord, type RepositoryAnalysis } from "@oram/engines";
 import { RULE_DOUBLE, RULE_SINGLE, statLine } from "../report/shared";
 import { printCliError } from "../errors";
 
@@ -59,6 +60,7 @@ const STAGE_DISPLAY: Readonly<Record<PipelineStepId, { readonly label: string; r
   reflection: { label: "Reflection", artifactType: "reflection" },
   "adaptive-decision": { label: "Adaptive Decision", artifactType: "engineering-decision" },
   "pull-request": { label: "Pull Request Proposal", artifactType: "pull-request-proposal" },
+  publisher: { label: "Publisher", artifactType: "publish-record" },
 };
 
 function findPayload<T>(result: PipelineRunResult, artifactType: string): T | null {
@@ -77,6 +79,7 @@ function renderStageChecklist(result: PipelineRunResult): string[] {
 function renderCompletionSections(result: PipelineRunResult): string[] {
   const decision = findPayload<EngineeringDecision>(result, "engineering-decision");
   const proposal = findPayload<PullRequestProposal>(result, "pull-request-proposal");
+  const record = findPayload<PublishRecord>(result, "publish-record");
   const lines: string[] = [];
 
   if (decision) {
@@ -103,6 +106,19 @@ function renderCompletionSections(result: PipelineRunResult): string[] {
       statLine("Title", proposal.title),
       statLine("Branch", proposal.branchName ?? "(none -- no PR should be created)"),
       statLine("Human Approval", proposal.humanApprovalRequired ? "REQUIRED" : "NOT REQUIRED")
+    );
+  }
+
+  if (record) {
+    lines.push(
+      "",
+      RULE_SINGLE,
+      "PUBLISH RECORD (dry run -- nothing was actually published)",
+      RULE_SINGLE,
+      "",
+      statLine("Outcome", record.outcome),
+      statLine("Reason", record.reason),
+      statLine("Pull Request URL", record.pullRequestUrl ?? "None")
     );
   }
 

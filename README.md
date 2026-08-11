@@ -52,6 +52,9 @@ Adaptive Decision  <-- reads Validation + Recommendation + Reflection + Engineer
       |
       v
 Pull Request Proposal  <-- deterministic PR proposal artifact; nothing is published
+      |
+      v
+Publisher  <-- deterministic dry-run publish record; nothing is ever really pushed to GitHub
 ```
 
 Most stages are one-in, one-out: each consumes exactly the artifact the previous stage produced and emits
@@ -62,17 +65,24 @@ Request Engine then converts that decision plus the run's implementation artifac
 structured `PullRequestProposal` (title, branch name, full PR body, verification expectations, and whether
 human approval is required).
 
-**ORAM does not publish pull requests automatically.** The Pull Request Engine never calls GitHub, never
-runs git, never invokes an LLM, and never modifies the repository — it only produces the proposal
-artifact. Actual GitHub publication belongs to a future Runtime/Publisher layer.
+**ORAM does not publish pull requests to GitHub, for real, today.** The Pull Request Engine never calls
+GitHub, never runs git, never invokes an LLM, and never modifies the repository — it only produces the
+proposal artifact. The Publisher Engine (Capability Sprint 20) is the pipeline's final stage: it converts
+that proposal into a deterministic `PublishRecord` describing what publishing it *would* do — four
+simulated stages (Create Branch, Commit, Push, Create Draft Pull Request) — using the same always-dry-run
+default (`MemoryPublisher`) every other pluggable stage in ORAM ships with (`MemoryProvider`,
+`MemoryAdapter`). A proposal that is `NO_ACTION` or still requires its own human approval is `SKIPPED`,
+never fabricated as published. A real, side-effecting `GitHubPublisher` exists only as a stub today (throws
+`NotImplementedYetError`, never the default) — real git/GitHub operations remain future work, in part
+because `ImplementationRequest`s carry no real file-level diff yet for a real commit to stage.
 
 ## Two execution styles
 
 - **Direct engine API** — every stage is a pure `buildX()` function you compose by hand (this is what the
   per-stage CLI commands do). Ideal for isolated, deterministic testing; recomputes upstream stages by
   design.
-- **Runtime pipeline execution** (Capability Sprints 17–19) — `oram run .` executes the complete,
-  real thirteen-stage pipeline through `@oram/runtime`'s `Runtime.runPipeline()`: every stage is invoked by
+- **Runtime pipeline execution** (Capability Sprints 17–20) — `oram run .` executes the complete,
+  real fourteen-stage pipeline through `@oram/runtime`'s `Runtime.runPipeline()`: every stage is invoked by
   the real `EngineRunner`, every output is persisted in the `ArtifactStore` under the run's `runId`
   (default `<repository>/.oram`), and every downstream stage consumes the current run's artifacts through
   its `RunArtifacts` view — never recomputing upstream work (the pipeline's engines are wired so any
@@ -147,13 +157,13 @@ oram engineer .
 It runs every ORAM engine sequentially (Repository Analysis → Engineering Knowledge → Engineering
 Reasoning → Engineering Planning → Engineering Missions → Implementation Requests → Execution Planning →
 Implementation Executor → Recommendation Engine → Reflection Engine → Engineering Memory → Adaptive
-Decision Engine → Pull Request Engine) and prints one boot-sequence-style report ending in the FINAL
-ENGINEERING DECISION and the PULL REQUEST PROPOSAL.
+Decision Engine → Pull Request Engine → Publisher Engine) and prints one boot-sequence-style report ending
+in the FINAL ENGINEERING DECISION, the PULL REQUEST PROPOSAL, and the PUBLISH RECORD.
 
 The individual per-stage commands (`oram analyze .`, `oram plan .`, `oram missions .`, `oram requests .`,
 `oram execute-plan .`, `oram execute .`, `oram recommend .`, `oram reflect .`, `oram history .`,
-`oram decide .`, `oram pull-request .`) remain available when you want to inspect a single stage's output —
-see `oram --help`.
+`oram decide .`, `oram pull-request .`, `oram publish .`) remain available when you want to inspect a
+single stage's output — see `oram --help`.
 
 ## Repository layout
 

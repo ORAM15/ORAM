@@ -37,7 +37,7 @@ const PRE_APPROVAL_LABELS = [
   "Execution Planning",
 ];
 
-const POST_APPROVAL_LABELS = ["Provider Execution", "Validation", "Recommendation", "Reflection", "Adaptive Decision", "Pull Request Proposal"];
+const POST_APPROVAL_LABELS = ["Provider Execution", "Validation", "Recommendation", "Reflection", "Adaptive Decision", "Pull Request Proposal", "Publisher"];
 
 async function runWithCapturedOutput(args: string[]): Promise<{ exitCode: number; logged: string[] }> {
   const logged: string[] = [];
@@ -103,17 +103,19 @@ test("oram run <concentrated-monorepo> --approve: continues the SAME run through
   assert.ok(report.includes("Run APPROVED. Provider Execution has now occurred exactly once."));
   assert.ok(report.includes("FINAL DECISION"));
   assert.ok(report.includes("PULL REQUEST PROPOSAL (generated, not published)"));
+  assert.ok(report.includes("PUBLISH RECORD (dry run -- nothing was actually published)"));
   assert.ok(report.includes("Lifecycle .............. COMPLETE"));
-  assert.ok(report.includes("Artifacts Persisted .... 13"));
+  assert.ok(report.includes("Artifacts Persisted .... 14"));
   assert.ok(report.includes("ORAM RUN COMPLETE"));
 
-  // All 13 stage artifacts, one run, on disk.
+  // All 14 stage artifacts, one run, on disk.
   const runsDir = path.join(artifactsDir, "runs");
   const runIds = await fsp.readdir(runsDir);
   assert.equal(runIds.length, 1);
   const artifactsRoot = path.join(runsDir, runIds[0]!, "artifacts");
   const stageDirs = (await fsp.readdir(artifactsRoot)).filter((name) => name !== "_index.json");
-  assert.equal(stageDirs.length, 13);
+  assert.equal(stageDirs.length, 14);
+  assert.ok(stageDirs.includes("publisher"));
 });
 
 test("oram run <concentrated-monorepo> --reject: reaches ABORTED -- Provider Execution never occurred", async (t) => {

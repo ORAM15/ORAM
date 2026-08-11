@@ -10,7 +10,7 @@
  * @oram/engines (the summary's "Repository Health" is Engineering Memory's own RunSnapshot.validationScore,
  * "Architecture" is the same describeArchitecture() every other report uses); this file only decides how to
  * lay it out. The checklist itself is honest, not decorative: the input type requires every stage's output,
- * so this function is only callable once all thirteen engines have actually run.
+ * so this function is only callable once all fourteen engines have actually run.
  */
 import type {
   RepositoryAnalysis,
@@ -20,6 +20,7 @@ import type {
   RunSnapshot,
   EngineeringDecision,
   PullRequestProposal,
+  PublishRecord,
 } from "@oram/engines";
 import { RULE_DOUBLE, RULE_SINGLE, describeArchitecture, statLine } from "./shared";
 
@@ -33,10 +34,12 @@ export interface EngineerReportInput {
   readonly decision: EngineeringDecision;
   /** The Pull Request Engine's deterministic proposal (Capability Sprint 16) -- rendered, never published. */
   readonly proposal: PullRequestProposal;
+  /** The Publisher Engine's deterministic record (Capability Sprint 20) -- always dry-run under MemoryPublisher. */
+  readonly publishRecord: PublishRecord;
   readonly elapsedMs: number;
 }
 
-/** The thirteen engines `oram engineer` runs, in execution order, under each Sprint's own stage names. */
+/** The fourteen engines `oram engineer` runs, in execution order, under each Sprint's own stage names. */
 const BOOT_SEQUENCE: ReadonlyArray<string> = [
   "Repository Analysis",
   "Engineering Knowledge",
@@ -51,6 +54,7 @@ const BOOT_SEQUENCE: ReadonlyArray<string> = [
   "Engineering Memory",
   "Adaptive Decision Engine",
   "Pull Request Engine",
+  "Publisher Engine",
 ];
 
 function renderBootSection(analysis: RepositoryAnalysis): string[] {
@@ -95,6 +99,18 @@ function renderProposalSection(proposal: PullRequestProposal): string[] {
   ];
 }
 
+function renderPublishSection(record: PublishRecord): string[] {
+  return [
+    RULE_SINGLE,
+    "PUBLISH RECORD (dry run)",
+    RULE_SINGLE,
+    "",
+    statLine("Outcome", record.outcome),
+    "",
+    statLine("Reason", record.reason),
+  ];
+}
+
 function renderSummarySection(
   analysis: RepositoryAnalysis,
   knowledge: EngineeringKnowledge,
@@ -128,6 +144,7 @@ export function renderEngineerReport({
   snapshot,
   decision,
   proposal,
+  publishRecord,
   elapsedMs,
 }: EngineerReportInput): string {
   const lines: string[] = [
@@ -136,6 +153,8 @@ export function renderEngineerReport({
     ...renderFinalDecisionSection(decision),
     "",
     ...renderProposalSection(proposal),
+    "",
+    ...renderPublishSection(publishRecord),
     "",
     ...renderSummarySection(analysis, knowledge, reasoning, plan, snapshot, decision, elapsedMs),
     "",

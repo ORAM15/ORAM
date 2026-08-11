@@ -32,4 +32,5 @@ export type PipelineStepId =
   | "recommendation"
   | "reflection"
   | "adaptive-decision"
-  | "pull-request";
+  | "pull-request"
+  | "publisher";
