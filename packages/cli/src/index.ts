@@ -30,6 +30,7 @@ import { reflectCommand } from "./commands/reflect";
 import { historyCommand } from "./commands/history";
 import { decideCommand } from "./commands/decide";
 import { pullRequestCommand } from "./commands/pull-request";
+import { publishCommand } from "./commands/publish";
 import { handoffCommand } from "./commands/handoff";
 import { engineerCommand } from "./commands/engineer";
 import { validateCommand } from "./commands/validate";
@@ -68,6 +69,7 @@ Usage:
   oram history <path>        Run the full pipeline and record it into Engineering Memory
   oram decide <path>         Run the full pipeline through the Adaptive Decision Engine
   oram pull-request <path>   Run the full pipeline through the Pull Request Engine (proposal only)
+  oram publish <path>        Run the full pipeline through the Publisher Engine (dry-run only)
   oram handoff <path>        Demonstrate Runtime artifact handoff (artifacts consumed, never recomputed)
   oram version               Print the oram CLI version
   oram help                  Show this help message`;
@@ -98,6 +100,7 @@ export const COMMANDS: Readonly<Record<string, CommandHandler>> = {
   history: historyCommand,
   decide: decideCommand,
   "pull-request": pullRequestCommand,
+  publish: publishCommand,
   handoff: handoffCommand,
   validate: validateCommand,
   inspect: inspectCommand,

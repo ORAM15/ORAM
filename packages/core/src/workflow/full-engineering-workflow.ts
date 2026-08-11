@@ -15,6 +15,12 @@ import type { PipelineStepId } from "./step";
  *
  * Engineering Memory is deliberately absent: it is a cross-run historical record, not a stage of one run's
  * dataflow (and per MemoryStore's own disclosed limitation it has no cross-process persistence yet).
+ *
+ * `publisher` (Capability Sprint 20) is the fourteenth and final stage -- Lifecycle.ts's own ENGINE MAPPING
+ * comment has always named PUBLISHING's two occupants as "Pull Request Generator + Publisher"; this is the
+ * second of that pair, immediately after `pull-request`. Both stay inside the pipeline's post-approval
+ * segment (see runtime/src/Runtime.ts's own gate-index derivation), so publishing a proposal always requires
+ * the same explicit human approval Provider Execution itself requires.
  */
 export const FULL_ENGINEERING_WORKFLOW: Workflow<PipelineStepId> = {
   id: "engineering-full",
@@ -33,5 +39,6 @@ export const FULL_ENGINEERING_WORKFLOW: Workflow<PipelineStepId> = {
     "reflection",
     "adaptive-decision",
     "pull-request",
+    "publisher",
   ],
 };

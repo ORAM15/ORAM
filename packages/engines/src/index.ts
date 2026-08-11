@@ -40,4 +40,6 @@ export * from "./adaptive-decision";
 
 export * from "./pull-request";
 
+export * from "./publisher";
+
 export { createFullPipelineEngines } from "./full-pipeline";

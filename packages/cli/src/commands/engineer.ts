@@ -5,8 +5,8 @@
  * platform: Repository Analysis -> Engineering Knowledge -> Engineering Reasoning -> Engineering Planning ->
  * Engineering Missions -> Implementation Requests -> Execution Planning -> Implementation Executor ->
  * Recommendation Engine -> Reflection Engine -> Engineering Memory -> Adaptive Decision Engine -> Pull
- * Request Engine (Capability Sprint 16 -- a deterministic PullRequestProposal, never a real PR; publication
- * belongs to a future Runtime/Publisher layer).
+ * Request Engine -> Publisher Engine (Capability Sprint 20 -- a deterministic PublishRecord via the
+ * always-dry-run MemoryPublisher; nothing is ever really published to GitHub).
  *
  * Pure orchestration only -- no engine logic is duplicated here. Two stages the boot checklist doesn't name
  * still run between Implementation Executor and Recommendation, exactly as `oram decide`/`oram history`
@@ -47,6 +47,7 @@ import {
   MemoryEngine,
   buildEngineeringDecision,
   buildPullRequestProposal,
+  buildPublishRecord,
 } from "@oram/engines";
 import { renderEngineerReport } from "../report/renderEngineerReport";
 import { printCliError } from "../errors";
@@ -120,8 +121,11 @@ export async function engineerCommand(args: string[]): Promise<number> {
     decision,
   });
 
+  // 14: Publisher Engine -- always dry-run under MemoryPublisher; nothing is ever really published.
+  const publishRecord = buildPublishRecord({ repositoryRoot: targetPath, proposal });
+
   const elapsedMs = Date.now() - startedAt;
 
-  console.log(renderEngineerReport({ analysis, knowledge, reasoning, plan, snapshot, decision, proposal, elapsedMs }));
+  console.log(renderEngineerReport({ analysis, knowledge, reasoning, plan, snapshot, decision, proposal, publishRecord, elapsedMs }));
   return 0;
 }

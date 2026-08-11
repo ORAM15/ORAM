@@ -5,11 +5,13 @@ This reflects the state of the framework at the point of extraction into its own
 
 ## Pipeline coverage
 
-Real, tested, TypeScript engines exist through the full pipeline as of this snapshot: Repository Analysis,
-Engineering Knowledge, Engineering Reasoning, Engineering Planning, Engineering Missions, Implementation
-Requests, Execution Planning, the Implementation Executor, Provider Execution, Validation, Recommendation,
-Reflection, Engineering Memory, and Adaptive Decision. See `packages/engines/README.md`'s status table for
-the authoritative, per-engine detail.
+Real, tested, TypeScript engines exist through the full pipeline: Repository Analysis, Engineering
+Knowledge, Engineering Reasoning, Engineering Planning, Engineering Missions, Implementation Requests,
+Execution Planning, the Implementation Executor, Provider Execution, Validation, Recommendation,
+Reflection, Engineering Memory, Adaptive Decision, the Pull Request Engine (proposal only), and the
+Publisher Engine (dry-run only). See `packages/engines/README.md`'s status table for the authoritative,
+per-engine detail. `@oram/runtime`'s `Runtime.runPipeline()` drives the full pipeline end to end, real
+`AWAITING_APPROVAL` gate included (Capability Sprint 19) — `oram run <path>`.
 
 ## Not yet built
 
@@ -17,10 +19,11 @@ the authoritative, per-engine detail.
   (`scripts/historical-context-retriever.js`, Jaccard-similarity based) existed on a local branch that
   predates the ORAM pivot and was never merged; it is not part of this repository. Would need to be
   rebuilt against the current `packages/engines` conventions, not ported as-is.
-- **`pull-request` / `publisher` engines** — wrapping the pipeline's decision to open a PR
-  (`scripts/pull-request-generator.js`) and actually pushing one (`publisher/github/client.js`,
-  `scripts/github-publisher.js`) in a typed `@oram/engines` package, the same way `provider-execution` wraps
-  a Provider today. Both scripts are preserved in this repository and are the intended starting point.
+- **Real git/GitHub publishing.** `publisher`'s only shipped `PublisherClient` is `MemoryPublisher` —
+  always dry-run, no git, no GitHub CLI, no network. `GitHubPublisher` exists only as a stub (throws
+  `NotImplementedYetError`); `publisher/github/client.js` is the real, tested reference implementation to
+  port. Blocked in part on richer implementation-request data: `ImplementationRequest.implementationTargets.
+  files` is always empty today, so there is no real file-level diff yet for a real Commit stage to stage.
 - **Real Providers.** `packages/engines/src/provider-execution/providers/` currently ships one working
   provider (`MemoryProvider`, deterministic canned responses) and three stubs (`ClaudeProvider`,
   `GeminiProvider`, `OpenAIProvider`) that throw `NotImplementedYetError`. System A's

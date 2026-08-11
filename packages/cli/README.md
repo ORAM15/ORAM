@@ -67,8 +67,8 @@ Engineering Memory, recording that run as one `RunSnapshot` into a fresh, in-pro
 Recommendation + the latest recorded Memory run into one `EngineeringDecision`)) and prints a
 presentation-ready console report -- see
 `src/report/`. None are wired to `@oram/runtime` (no Lifecycle, no ArtifactStore, no EventBus); that's
-deliberate, see each command's own header comment. `run` (Capability Sprints 18-19) is the exception and the
-primary command: it executes the full real thirteen-stage pipeline through `@oram/runtime`'s
+deliberate, see each command's own header comment. `run` (Capability Sprints 18-20) is the exception and the
+primary command: it executes the full real fourteen-stage pipeline through `@oram/runtime`'s
 `Runtime.runPipeline()` -- real Lifecycle, real EngineRunner, real ArtifactStore persistence under
 `<repository>/.oram` (or `--artifacts-dir`), artifact handoff between every stage. Since Sprint 19 the run
 genuinely PAUSES at `AWAITING_APPROVAL` before Provider Execution -- no auto-pass, no timer -- and only

@@ -386,6 +386,7 @@ const PIPELINE_STEP_LIFECYCLE_PHASE: Readonly<Record<PipelineStepId, LifecyclePh
   reflection: "REFLECTING",
   "adaptive-decision": "REFLECTING",
   "pull-request": "PUBLISHING",
+  publisher: "PUBLISHING",
 };
 
 /**
