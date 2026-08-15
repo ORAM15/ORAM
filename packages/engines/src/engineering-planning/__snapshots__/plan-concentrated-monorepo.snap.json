@@ -21,7 +21,8 @@
       ],
       "sourceFindingIds": [
         "opaque-subsystems:2-of-4-subsystems-have-no-technology-attributed-to-them-specifically-packages-shared-packages-utils-responsibilities-or-dependencies-may-be-undeclared-at-the-module-level"
-      ]
+      ],
+      "sourceFiles": []
     },
     {
       "id": "mission:increase-test-coverage",
@@ -42,6 +43,9 @@
       ],
       "sourceFindingIds": [
         "untested-api-surface:an-api-framework-express-is-in-use-with-no-automated-testing-framework-detected-untested-api-surface-is-a-higher-risk-gap-than-untested-code-in-general"
+      ],
+      "sourceFiles": [
+        "packages/api/package.json"
       ]
     }
   ],
