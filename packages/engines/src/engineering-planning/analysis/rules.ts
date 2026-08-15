@@ -8,15 +8,13 @@
  *
  *   "Improve Subsystem Documentation" (matches Finding.kind === "opaque-subsystems") and "Increase Test
  *   Coverage" (matches Finding.category === "testing-gap", which today only ever means the existing
- *   "untested-api-surface" rule) are both real: see engineering-reasoning/analysis/rules.ts, whose 5 rules
- *   can genuinely produce both. "Refactor Circular Dependencies" matches Finding.kind === "circular-
- *   dependencies" -- a Finding kind Engineering Reasoning does not emit yet (it has no dependency-cycle
- *   detection at all). That mapping is included because it was explicitly requested as an "initial supported
- *   mapping" for this Sprint; it is real, correct, and covered by its own unit test against a hand-built
- *   Finding, but it will not fire against any real `oram plan` run until a future Engineering Reasoning rule
- *   actually detects circular dependencies. Per this project's standing rule ("explain a limitation before
- *   implementing a new abstraction"), that detection is NOT added here -- Engineering Reasoning is out of
- *   scope for this Sprint.
+ *   "untested-api-surface" rule) are both real. "Refactor Circular Dependencies" matches Finding.kind ===
+ *   "circular-dependencies" -- a Finding kind Engineering Reasoning does not emit yet. That mapping is
+ *   included because it was explicitly requested as an initial supported mapping; it will not fire against
+ *   any real run until a future reasoning rule detects circular dependencies.
+ *
+ * Sprint 21 provenance addition: each Mission preserves the unique sourceFiles from all Findings matched by
+ * its template. This is a deterministic provenance join, not a claim that every source file is an edit target.
  */
 
 import type { Finding } from "../../engineering-reasoning/analysis/types";
@@ -84,6 +82,10 @@ function buildTask(template: MissionTemplate, finding: Finding): MissionTask {
   };
 }
 
+function collectSourceFiles(findings: ReadonlyArray<Finding>): string[] {
+  return [...new Set(findings.flatMap((finding) => finding.sourceFiles))].sort();
+}
+
 function buildMission(template: MissionTemplate, findings: ReadonlyArray<Finding>): Mission {
   const tasks = findings.map((finding) => buildTask(template, finding));
   return {
@@ -97,6 +99,7 @@ function buildMission(template: MissionTemplate, findings: ReadonlyArray<Finding
     expectedImpact: template.expectedImpact,
     tasks,
     sourceFindingIds: findings.map((f) => f.id),
+    sourceFiles: collectSourceFiles(findings),
   };
 }
 
