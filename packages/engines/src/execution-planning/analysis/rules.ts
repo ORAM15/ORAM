@@ -1,25 +1,9 @@
 /**
  * The per-Request -> ExecutionPlan transformation (Execution Planning MVP). Pure template lookups over an
- * already-computed ImplementationRequestSet -- no filesystem, no Runtime, no Providers, no AI. Steps
- * describe what should happen; nothing here does it.
+ * already-computed ImplementationRequestSet -- no filesystem, no Runtime, no Providers, no AI.
  *
- * CONCRETE LIMITATION -- READ BEFORE TRUSTING STEP CONTENT OR DEPENDENCIES AS DISCOVERED FACTS
- *
- *   1. The middle (creation/modification) step is chosen by looking up `request.title` in TITLE_STEP -- a
- *      small, fully known, fixed set of exact strings Engineering Planning's 3 mapping rules always produce
- *      today (see engineering-planning/analysis/rules.ts). This is NOT a structural dispatch on Mission kind:
- *      Sprint 6 (implementation-requests) never carried `Mission.kind` through onto `ImplementationRequest`,
- *      so `title` is the closest stable, deterministic key still available at this stage. Any future Mission
- *      kind (a new title this table doesn't recognize) falls back to DEFAULT_STEP, a generic-but-honest
- *      template, rather than guessing.
- *
- *   2. `dependencyIds` are a single linear chain over `ImplementationRequestSet.requests`' own existing order
- *      -- exactly the same honest-default reasoning engineering-missions/analysis/rules.ts used one stage up
- *      for the identical problem (no real dependency signal available: Sprint 6 didn't carry MissionGraph's
- *      `dependencyIds`/`MissionDependency` edges through to ImplementationRequest either). Not a claim that
- *      plan N is technically blocked on plan N-1; a default sequencing over already-deterministic order.
- *
- *   Both are disclosed here rather than presented as discovered structure.
+ * Sprint 21 provenance addition: sourceFiles are copied from each ImplementationRequest into its ExecutionPlan.
+ * They remain evidence/context. This stage still does not invent or claim an actual edit target list.
  */
 
 import { makeId } from "../../repository-analyzer/analysis/identity";
@@ -31,7 +15,6 @@ interface StepTemplate {
   readonly description: string;
 }
 
-/** Looked up by ImplementationRequest.title -- see this file's own CONCRETE LIMITATION note (#1) for why title, not a dropped `kind` field. */
 const TITLE_STEP: Readonly<Record<string, StepTemplate>> = {
   "Improve Subsystem Documentation": {
     action: "CREATE_FILE",
@@ -81,6 +64,7 @@ export function buildExecutionPlanNodes(requests: ReadonlyArray<ImplementationRe
     requestId: request.id,
     title: request.title,
     priority: request.priority,
+    sourceFiles: request.sourceFiles,
     steps: buildSteps(request),
     dependencyIds: index === 0 ? [] : [planId(requests[index - 1]!)],
     order: index,
