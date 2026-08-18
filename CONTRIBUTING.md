@@ -30,6 +30,19 @@ npm run build
    or changed a public command or engine.
 5. Open a pull request against `main`.
 
+## AI-assisted development workflow
+
+When working with AI agents or AI-assisted tooling, follow the intended development loop:
+
+1. Read `AGENTS.md` and existing project documentation.
+2. Inspect before changing.
+3. Make a bounded change.
+4. Run the relevant validation/tests.
+5. Inspect the diff.
+6. Commit/push through the normal Git workflow and use a PR for review.
+
+AI agents are assistants, not architectural authorities. Human maintainers retain ownership of design decisions and code review. Secrets and sensitive credentials must never be committed to the repository.
+
 ## Reporting bugs / proposing engines
 
 Open an issue describing the repository behavior you observed (or want ORAM to detect) and, if you're
