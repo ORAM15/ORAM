@@ -13,6 +13,7 @@
  */
 
 import type { LLMResponse, PromptArtifact } from "../analysis/types";
+import type { AsyncProvider } from "./types";
 
 export interface OllamaProviderOptions {
   readonly model: string;
@@ -36,7 +37,7 @@ type AnthropicMessageResponse = {
   };
 };
 
-export class OllamaProvider {
+export class OllamaProvider implements AsyncProvider {
   private readonly model: string;
   private readonly baseUrl: string;
   private readonly apiKey: string;
