@@ -90,7 +90,7 @@ export function runAll(planSet: ExecutionPlanSet, engine: ProviderExecutionEngin
 
 /** Runs every ExecutionPlan in a set, in order, through one AsyncProviderExecutionEngine. */
 export async function runAllAsync(
-  planSet: ExecutionPlanSet,
+  planSet: Pick<ExecutionPlanSet, "plans">,
   engine: AsyncProviderExecutionEngine,
 ): Promise<ProviderExecutionResult[]> {
   const results: ProviderExecutionResult[] = [];
