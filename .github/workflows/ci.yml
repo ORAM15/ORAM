@@ -7,6 +7,25 @@ on:
 
 jobs:
   test:
+    name: test (${{ matrix.suite }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - engines
+          - runtime
+          - cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npx tsx --test packages/${{ matrix.suite }}/src/**/*.test.ts
+
+  build:
+    name: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,6 +33,4 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npx tsx --test packages/engines/src/**/*.test.ts
-      - run: npx tsx --test packages/cli/src/**/*.test.ts
       - run: npm run build
