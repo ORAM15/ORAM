@@ -40,7 +40,11 @@ export function detectRepositoryStructure(root: string, dirs: ReadonlySet<string
   for (const dir of dirs) {
     if (dir.split("/").length > 2) continue; // top-level + one level deep only
     const { role, confidence } = classifyRole(basename(dir));
-    entries.push({ id: makeId("dir", dir), path: dir, role, confidence });
+    // Directory paths are semantic identities. `makeId()` intentionally slugifies punctuation, so a nested
+    // path such as `docs/adr` would otherwise collapse to the same id as a distinct root directory `docs-adr`.
+    // Encode the path separator before namespacing it so physically distinct directories remain distinct.
+    const identityPath = dir.replaceAll("/", "~2f");
+    entries.push({ id: makeId("dir", identityPath), path: dir, role, confidence });
   }
   return entries.sort((a, b) => a.path.localeCompare(b.path));
 }
@@ -84,9 +88,6 @@ export function detectEntryPoints(files: ReadonlyArray<WalkedFile>): Detection<s
     } catch {
       continue;
     }
-    // `value` alone is NOT a safe id source here: a monorepo's packages very commonly each declare the same
-    // relative "main": "src/index.ts" -- a different physical file every time, relative to that package's own
-    // directory. The declaring manifest's own path is folded into the id so these can never collide.
     if (typeof pkg.main === "string") {
       detections.push({ id: makeId("entry-point", `${file.relPath}:${pkg.main}`), kind: "entry-point", value: pkg.main, confidence: "High", evidence: [`"main" field in ${file.relPath}`], sourceFiles: [file.relPath], sourceDetectionIds: [] });
       explicitlyDetectedPaths.add(pkg.main);
@@ -108,9 +109,6 @@ export function detectEntryPoints(files: ReadonlyArray<WalkedFile>): Detection<s
 
   const relPaths = new Set(files.map((f) => f.relPath));
   for (const candidate of CONVENTIONAL_ENTRY_POINTS) {
-    // Skip a path already detected from an explicit package.json field: same fact, stronger evidence already
-    // recorded -- a second, lower-confidence entry for the identical path would collide on id (this was
-    // previously a disclosed, unfixed limitation; identity now forces the fix).
     if (explicitlyDetectedPaths.has(candidate)) continue;
     if (relPaths.has(candidate)) {
       detections.push({ id: makeId("entry-point", candidate), kind: "entry-point", value: candidate, confidence: "Medium", evidence: ["conventional entry point filename"], sourceFiles: [candidate], sourceDetectionIds: [] });
