@@ -19,6 +19,8 @@ export { FileSystemArtifactStore } from "./ArtifactStore";
 
 export type { ProviderRegistry, Provider, ProviderResult, ProviderCapabilities } from "./ProviderRegistry";
 export { InMemoryProviderRegistry } from "./ProviderRegistry";
+export type { ProviderSelectionConfig } from "./ProviderSelection";
+export { DEFAULT_PROVIDER_ID, resolveProviderId, selectProvider } from "./ProviderSelection";
 
 export type { Logger, LogLevel, LogEntry } from "./Logger";
 export { BufferedLogger } from "./Logger";
