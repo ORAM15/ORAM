@@ -7,10 +7,9 @@
  * implementation backs which interface" a single, overridable decision instead of one repeated at every
  * call site.
  *
- * Fluent `with*()` overrides exist for testing (e.g. `oram inspect`'s own tests can swap in an in-memory
- * ArtifactStore) and for a future hosted ORAM (Section 11 of docs/ORAM_SPECIFICATION_v1.md's Non-goals --
- * this builder is exactly the seam a durable EventBus/ArtifactStore would be substituted through, without
- * OramRuntime itself ever needing to change).
+ * Fluent `with*()` overrides exist for testing and future hosted ORAM deployments. Provider selection is
+ * resolved here at the composition boundary, while the selected Provider remains behind the registry
+ * contract. RuntimeBuilder never imports a concrete external AI provider.
  *
  * TODO(runtime): once oram.config.schema.json has a generated type, RuntimeBuilderOptions.config should be
  *   used to decide the ArtifactStore's `storage` mode ("home" vs "repository-local" -- see
@@ -26,25 +25,20 @@ import { FileSystemArtifactStore, type ArtifactStore } from "./ArtifactStore";
 import { BufferedLogger, type Logger } from "./Logger";
 import { InMemoryProviderRegistry, type ProviderRegistry } from "./ProviderRegistry";
 import { DeterministicMemoryProvider } from "./DeterministicMemoryProvider";
+import { DEFAULT_PROVIDER_ID, type ProviderSelectionConfig, selectProvider } from "./ProviderSelection";
 import { OramRuntime, type Runtime, type PhaseEngineOverrides } from "./Runtime";
 import type { EngineDescriptor } from "./EngineRunner";
 
 export interface RuntimeBuilderOptions {
-  /** Used only to compute default dependency locations (today: the default ArtifactStore's baseDir). This is NOT the same value as Runtime.start()'s own RuntimeOptions.repositoryPath, which remains the sole per-run authority -- see the open TODO on that decoupling below. */
+  /** Used only to compute default dependency locations (today: the default ArtifactStore's baseDir). */
   readonly repositoryRoot: string;
   readonly config?: unknown;
   /** Overrides the default `<repositoryRoot>/.oram` artifact storage location. */
   readonly artifactsBaseDir?: string;
+  /** Selects a provider already registered in the Runtime ProviderRegistry. Defaults to deterministic `memory`. */
+  readonly providerSelection?: ProviderSelectionConfig;
 }
 
-/**
- * TODO(runtime): RuntimeBuilderOptions.repositoryRoot and Runtime.start()'s RuntimeOptions.repositoryPath
- *   are architecturally decoupled today -- the former only seeds defaults at composition time, the latter is
- *   authoritative at run time. In ordinary CLI usage both will hold the same value, but nothing enforces
- *   that. A future pass should decide whether to unify them or keep the decoupling (useful if one Runtime
- *   instance is ever asked to build a default ArtifactStore before it knows which repository a given `start()`
- *   call will target).
- */
 export class RuntimeBuilder {
   private eventBusOverride: EventBus | null = null;
   private loggerOverride: Logger | null = null;
@@ -73,19 +67,19 @@ export class RuntimeBuilder {
   }
 
   /**
-   * Substitutes a real EngineDescriptor for the Observe phase's placeholder (Phase 3's seam -- see
-   * Runtime.ts's PhaseEngineOverrides and its module-level PHASE 3 STATUS note for why this exists as
-   * dependency injection rather than a hard import). Callers wire in @oram/engines'
-   * createLegacyRepositoryAnalyzerAdapter() (or any future real Observe engine) through this method --
-   * RuntimeBuilder itself still never imports @oram/engines, preserving the System Layers dependency
-   * direction (docs/ORAM_SPECIFICATION_v1.md Section 3).
+   * Substitutes a real EngineDescriptor for the Observe phase's placeholder. RuntimeBuilder itself still
+   * never imports @oram/engines, preserving the System Layers dependency direction.
    */
   withObserveEngine(engine: EngineDescriptor<unknown>): this {
     this.engineOverrides = { ...this.engineOverrides, observe: engine };
     return this;
   }
 
-  /** Composes every dependency (an override if one was supplied via with*(), otherwise the v1 default) and returns a ready-to-use Runtime. */
+  /**
+   * Composes every dependency and validates the configured provider selection before returning a Runtime.
+   * The default registry receives only the deterministic `memory` provider; caller-supplied registries remain
+   * authoritative and are never mutated by the builder.
+   */
   build(options: RuntimeBuilderOptions): Runtime {
     const eventBus = this.eventBusOverride ?? new InMemoryEventBus();
     const logger = this.loggerOverride ?? new BufferedLogger();
@@ -95,6 +89,10 @@ export class RuntimeBuilder {
     if (!this.providerRegistryOverride) {
       providerRegistry.register(new DeterministicMemoryProvider());
     }
+
+    // Resolve at composition time so an invalid/unknown provider fails before a Runtime is handed to callers.
+    // The selected provider remains owned by the registry; this step intentionally performs no execution.
+    selectProvider(providerRegistry, options.providerSelection ?? { providerId: DEFAULT_PROVIDER_ID });
 
     return new OramRuntime({ eventBus, artifactStore, providerRegistry, logger }, this.engineOverrides);
   }
