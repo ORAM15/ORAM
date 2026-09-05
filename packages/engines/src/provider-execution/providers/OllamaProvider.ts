@@ -5,7 +5,7 @@
  * Anthropic-compatible /v1/messages endpoint and normalizes the response into
  * ORAM's existing LLMResponse shape. It does not edit files, run commands, or
  * apply patches. The existing synchronous Provider contract remains unchanged
- * until the runtime can safely adopt an asynchronous provider boundary.
+ * while this adapter participates in the additive AsyncProvider boundary.
  *
  * Thinking is explicitly disabled because the Sprint 21 local validation
  * established that Qwen3.5 can return a clean Anthropic text/tool response when
@@ -13,6 +13,7 @@
  */
 
 import type { LLMResponse, PromptArtifact } from "../analysis/types";
+import type { AsyncProvider } from "./async-types";
 
 export interface OllamaProviderOptions {
   readonly model: string;
@@ -36,7 +37,7 @@ type AnthropicMessageResponse = {
   };
 };
 
-export class OllamaProvider {
+export class OllamaProvider implements AsyncProvider {
   private readonly model: string;
   private readonly baseUrl: string;
   private readonly apiKey: string;
