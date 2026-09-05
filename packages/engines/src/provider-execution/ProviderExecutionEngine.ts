@@ -37,6 +37,7 @@ import type { ExecutionPlan, ExecutionPlanSet } from "../execution-planning/anal
 import { buildPromptArtifact } from "./analysis/build-prompt";
 import { buildPatchArtifact } from "./analysis/build-patch";
 import { MemoryProvider } from "./providers/MemoryProvider";
+import type { AsyncProvider } from "./providers/async-types";
 import type { Provider } from "./providers/types";
 import type { ProviderExecutionResult, ProviderExecutionStepResult } from "./analysis/types";
 
@@ -56,11 +57,44 @@ export class ProviderExecutionEngine {
     const finishedAt = new Date().toISOString();
     return { planId: plan.id, steps, startedAt, finishedAt };
   }
+
+  /**
+   * Executes a plan through an explicitly asynchronous provider without changing the established synchronous
+   * Provider contract. This is the additive seam for network-backed providers such as Ollama; approval,
+   * validation, and repository mutation remain outside this method.
+   */
+  public async runAsync(plan: ExecutionPlan, provider: AsyncProvider): Promise<ProviderExecutionResult> {
+    const startedAt = new Date().toISOString();
+
+    const steps: ProviderExecutionStepResult[] = [];
+    for (const step of plan.steps) {
+      const prompt = buildPromptArtifact(step);
+      const response = await provider.generate(prompt);
+      const patch = buildPatchArtifact(response);
+      steps.push({ executionStepId: step.id, prompt, response, patch });
+    }
+
+    const finishedAt = new Date().toISOString();
+    return { planId: plan.id, steps, startedAt, finishedAt };
+  }
 }
 
 /** Runs every ExecutionPlan in a set, in order, through one ProviderExecutionEngine -- a thin convenience wrapper, mirroring implementation-executor's own executeAll(). */
 export function runAll(planSet: ExecutionPlanSet, engine: ProviderExecutionEngine = new ProviderExecutionEngine()): ProviderExecutionResult[] {
   return planSet.plans.map((plan) => engine.run(plan));
+}
+
+/** Runs every ExecutionPlan sequentially through an explicit asynchronous provider. */
+export async function runAllAsync(
+  planSet: ExecutionPlanSet,
+  provider: AsyncProvider,
+  engine: ProviderExecutionEngine = new ProviderExecutionEngine(),
+): Promise<ProviderExecutionResult[]> {
+  const results: ProviderExecutionResult[] = [];
+  for (const plan of planSet.plans) {
+    results.push(await engine.runAsync(plan, provider));
+  }
+  return results;
 }
 
 export function createProviderExecutionEngine(
