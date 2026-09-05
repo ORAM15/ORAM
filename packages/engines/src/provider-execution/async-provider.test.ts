@@ -71,10 +71,10 @@ test("runAllAsync: executes plans sequentially through the explicit async provid
 
   assert.deepEqual(results.map((result) => result.planId), [first.id, second.id]);
   assert.equal(events.length, 6);
-  assert.equal(events[1], `finish:${first.steps[0]!.id}`);
-  assert.equal(events[2], `start:${first.steps[1]!.id}`);
-  assert.equal(events[3], `finish:${first.steps[1]!.id}`);
-  assert.equal(events[4], `start:${second.steps[0]!.id}`);
+  assert.equal(events[1], `finish:${results[0]!.steps[0]!.prompt.id}`);
+  assert.equal(events[2], `start:${results[0]!.steps[1]!.prompt.id}`);
+  assert.equal(events[3], `finish:${results[0]!.steps[1]!.prompt.id}`);
+  assert.equal(events[4], `start:${results[1]!.steps[0]!.prompt.id}`);
 });
 
 test("async execution propagates provider failures without converting them into success", async () => {
