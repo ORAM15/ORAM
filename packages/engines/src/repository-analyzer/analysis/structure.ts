@@ -25,11 +25,7 @@ function stablePathHash(value: string): string {
   return (hash >>> 0).toString(16).padStart(8, "0");
 }
 
-/**
- * Directory paths can legitimately differ while producing the same slug (for example `docs/adr` and
- * `docs-adr`). Preserve the historical slug-based id when it is unique, but add a deterministic path hash
- * whenever a collision is detected so two distinct repository facts never share an identity.
- */
+/** Preserve the historical directory id when unique; disambiguate only when slugification collides. */
 function makeUniqueDirectoryId(dir: string, usedIds: Set<string>): string {
   const baseId = makeId("dir", dir);
   if (!usedIds.has(baseId)) return baseId;
@@ -74,7 +70,7 @@ export function detectRepositoryStructure(root: string, dirs: ReadonlySet<string
     usedIds.add(id);
     entries.push({ id, path: dir, role, confidence });
   }
-  return entries;
+  return entries.sort((a, b) => a.path.localeCompare(b.path));
 }
 
 /** Derives every directory path implied by a walked file list -- no extra filesystem access. */
@@ -116,6 +112,9 @@ export function detectEntryPoints(files: ReadonlyArray<WalkedFile>): Detection<s
     } catch {
       continue;
     }
+    // `value` alone is NOT a safe id source here: a monorepo's packages very commonly each declare the same
+    // relative "main": "src/index.ts" -- a different physical file every time, relative to that package's own
+    // directory. The declaring manifest's own path is folded into the id so these can never collide.
     if (typeof pkg.main === "string") {
       detections.push({ id: makeId("entry-point", `${file.relPath}:${pkg.main}`), kind: "entry-point", value: pkg.main, confidence: "High", evidence: [`"main" field in ${file.relPath}`], sourceFiles: [file.relPath], sourceDetectionIds: [] });
       explicitlyDetectedPaths.add(pkg.main);
@@ -137,6 +136,9 @@ export function detectEntryPoints(files: ReadonlyArray<WalkedFile>): Detection<s
 
   const relPaths = new Set(files.map((f) => f.relPath));
   for (const candidate of CONVENTIONAL_ENTRY_POINTS) {
+    // Skip a path already detected from an explicit package.json field: same fact, stronger evidence already
+    // recorded -- a second, lower-confidence entry for the identical path would collide on id (this was
+    // previously a disclosed, unfixed limitation; identity now forces the fix).
     if (explicitlyDetectedPaths.has(candidate)) continue;
     if (relPaths.has(candidate)) {
       detections.push({ id: makeId("entry-point", candidate), kind: "entry-point", value: candidate, confidence: "Medium", evidence: ["conventional entry point filename"], sourceFiles: [candidate], sourceDetectionIds: [] });
