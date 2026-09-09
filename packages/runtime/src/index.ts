@@ -1,8 +1,6 @@
 /**
- * @oram/runtime public entry point. Re-exports every type/class from this package's five modules -- see
- * docs/ORAM_SPECIFICATION_v1.md Section 5 and this package's own README.md for the responsibility this
- * package as a whole owns. Consumers should always import from "@oram/runtime", never reach into individual
- * files directly, so this barrel remains the one place the package's public surface is defined.
+ * @oram/runtime public entry point. Re-exports every type/class from this package's modules so consumers
+ * have one stable public surface and never need deep imports.
  */
 
 export type { Runtime, RuntimeDependencies, RuntimeOptions, RunHandle, PhaseEngineOverrides, PipelineEngines, PipelineRunResult, PipelineRunStatus } from "./Runtime";
@@ -19,6 +17,9 @@ export { FileSystemArtifactStore } from "./ArtifactStore";
 
 export type { ProviderRegistry, Provider, ProviderResult, ProviderCapabilities } from "./ProviderRegistry";
 export { InMemoryProviderRegistry } from "./ProviderRegistry";
+export { DeterministicMemoryProvider, DETERMINISTIC_MEMORY_PROVIDER_ID } from "./DeterministicMemoryProvider";
+export type { ProviderSelectionConfig } from "./ProviderSelection";
+export { DEFAULT_PROVIDER_ID, resolveProviderId, selectProvider } from "./ProviderSelection";
 
 export type { Logger, LogLevel, LogEntry } from "./Logger";
 export { BufferedLogger } from "./Logger";
