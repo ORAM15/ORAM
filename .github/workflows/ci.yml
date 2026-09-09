@@ -14,6 +14,5 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npx tsx --test packages/engines/src/**/*.test.ts
-      - run: npx tsx --test packages/cli/src/**/*.test.ts
+      - run: npm test
       - run: npm run build

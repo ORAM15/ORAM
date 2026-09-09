@@ -16,6 +16,29 @@ function basename(relPath: string): string {
   return relPath.split("/").pop() ?? relPath;
 }
 
+function stablePathHash(value: string): string {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+/** Preserve the historical directory id when unique; disambiguate only when slugification collides. */
+function makeUniqueDirectoryId(dir: string, usedIds: Set<string>): string {
+  const baseId = makeId("dir", dir);
+  if (!usedIds.has(baseId)) return baseId;
+
+  let candidate = `${baseId}-${stablePathHash(dir)}`;
+  let suffix = 1;
+  while (usedIds.has(candidate)) {
+    candidate = `${baseId}-${stablePathHash(`${dir}:${suffix}`)}`;
+    suffix += 1;
+  }
+  return candidate;
+}
+
 /**
  * `role` is a naming-convention match, never a content inspection -- `confidence` says so honestly instead
  * of presenting the guess as fact: "Medium" when a keyword matched (a real, deliberate convention, but never
@@ -36,11 +59,16 @@ function classifyRole(name: string): { role: RepositoryStructureEntry["role"]; c
 
 /** Top-level directories plus one level deeper -- generic, not tied to any fixed set of expected directory names. */
 export function detectRepositoryStructure(root: string, dirs: ReadonlySet<string>): RepositoryStructureEntry[] {
+  void root;
   const entries: RepositoryStructureEntry[] = [];
-  for (const dir of dirs) {
-    if (dir.split("/").length > 2) continue; // top-level + one level deep only
+  const usedIds = new Set<string>();
+  const eligibleDirs = [...dirs].filter((dir) => dir.split("/").length <= 2).sort((a, b) => a.localeCompare(b));
+
+  for (const dir of eligibleDirs) {
     const { role, confidence } = classifyRole(basename(dir));
-    entries.push({ id: makeId("dir", dir), path: dir, role, confidence });
+    const id = makeUniqueDirectoryId(dir, usedIds);
+    usedIds.add(id);
+    entries.push({ id, path: dir, role, confidence });
   }
   return entries.sort((a, b) => a.path.localeCompare(b.path));
 }

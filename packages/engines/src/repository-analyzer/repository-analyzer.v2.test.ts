@@ -13,6 +13,7 @@ import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import * as path from "node:path";
 import { buildRepositoryAnalysis } from "./analysis/build-analysis";
+import { detectRepositoryStructure } from "./analysis/structure";
 import type { Detection, RepositoryAnalysis } from "./analysis/types";
 
 const FIXTURES_ROOT = path.join(import.meta.dirname, "__fixtures__");
@@ -246,6 +247,14 @@ test("identity is deterministic: analyzing the same fixture twice produces byte-
     first.repositoryStructure.map((e) => e.id).sort(),
     second.repositoryStructure.map((e) => e.id).sort()
   );
+});
+
+test("directory identities stay unique when distinct paths normalize to the same slug", () => {
+  const structure = detectRepositoryStructure("/unused", new Set(["docs/adr", "docs-adr"]));
+  assert.deepEqual(structure.map((entry) => entry.path), ["docs-adr", "docs/adr"]);
+  assertUniqueIds(structure);
+  assert.equal(structure.find((entry) => entry.path === "docs-adr")?.id, "dir:docs-adr");
+  assert.match(structure.find((entry) => entry.path === "docs/adr")?.id ?? "", /^dir:docs-adr-[0-9a-f]{8}$/);
 });
 
 test("smoke test: buildRepositoryAnalysis() runs against this actual repository without crashing", () => {
