@@ -80,3 +80,27 @@ test("OllamaProvider: fails closed when the response contains no text content", 
 
   await assert.rejects(() => provider.generate(prompt), /returned no text content/);
 });
+
+test(
+  "OllamaProvider: aborts a hanging request when the timeout expires",
+  { timeout: 1000 },
+  async () => {
+    let observedSignal: AbortSignal | undefined;
+
+    const provider = new OllamaProvider({
+      model: "qwen3.5:4b",
+      timeoutMs: 5,
+      fetchImpl: async (_input, init) => {
+        observedSignal = init?.signal as AbortSignal | undefined;
+        await new Promise<void>((resolve) => {
+          if (observedSignal?.aborted) return resolve();
+          observedSignal?.addEventListener("abort", () => resolve(), { once: true });
+        });
+        throw new DOMException("The operation was aborted.", "AbortError");
+      },
+    });
+
+    await assert.rejects(() => provider.generate(prompt), /aborted/i);
+    assert.equal(observedSignal?.aborted, true);
+  },
+);
