@@ -69,10 +69,17 @@ export class InMemoryProviderRegistry implements ProviderRegistry {
   private readonly providers = new Map<string, Provider>();
 
   register(provider: Provider): void {
-    if (this.providers.has(provider.id)) {
-      throw new Error(`Provider "${provider.id}" is already registered.`);
+    const id = provider.id.trim();
+    if (!id) {
+      throw new Error("Provider registration requires a non-empty provider id.");
     }
-    this.providers.set(provider.id, provider);
+    if (id !== provider.id) {
+      throw new Error(`Provider id must not contain leading or trailing whitespace: "${provider.id}".`);
+    }
+    if (this.providers.has(id)) {
+      throw new Error(`Provider "${id}" is already registered.`);
+    }
+    this.providers.set(id, provider);
   }
 
   resolve(id: string): Provider {
