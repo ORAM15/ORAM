@@ -19,6 +19,7 @@ export { FileSystemArtifactStore } from "./ArtifactStore";
 
 export type { ProviderRegistry, Provider, ProviderResult, ProviderCapabilities } from "./ProviderRegistry";
 export { InMemoryProviderRegistry } from "./ProviderRegistry";
+export { DeterministicMemoryProvider, DETERMINISTIC_MEMORY_PROVIDER_ID } from "./DeterministicMemoryProvider";
 
 export type { Logger, LogLevel, LogEntry } from "./Logger";
 export { BufferedLogger } from "./Logger";
