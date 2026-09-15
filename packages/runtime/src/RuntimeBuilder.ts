@@ -25,6 +25,7 @@ import { InMemoryEventBus, type EventBus } from "./EventBus";
 import { FileSystemArtifactStore, type ArtifactStore } from "./ArtifactStore";
 import { BufferedLogger, type Logger } from "./Logger";
 import { InMemoryProviderRegistry, type ProviderRegistry } from "./ProviderRegistry";
+import { DeterministicMemoryProvider } from "./DeterministicMemoryProvider";
 import { OramRuntime, type Runtime, type PhaseEngineOverrides } from "./Runtime";
 import type { EngineDescriptor } from "./EngineRunner";
 
@@ -91,6 +92,9 @@ export class RuntimeBuilder {
     const artifactStore =
       this.artifactStoreOverride ?? new FileSystemArtifactStore(options.artifactsBaseDir ?? path.join(options.repositoryRoot, ".oram"));
     const providerRegistry = this.providerRegistryOverride ?? new InMemoryProviderRegistry();
+    if (!this.providerRegistryOverride) {
+      providerRegistry.register(new DeterministicMemoryProvider());
+    }
 
     return new OramRuntime({ eventBus, artifactStore, providerRegistry, logger }, this.engineOverrides);
   }
